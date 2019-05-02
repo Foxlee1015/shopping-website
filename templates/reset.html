@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Foxlee-shopping-login</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main_login.css') }}">
+  </head>
+<body class="member-container member-root--clean page-null page-login-login env-production" data-log-pack="{ &quot;isMobile&quot;:false }" data-reference="{&quot;wiselogSid&quot;:&quot;coupang&quot;, &quot;profile&quot;:&quot;production&quot;, &quot;isMobile&quot;:false }">
+<div class="member-wrapper member-wrapper--flex">
+    <header class="member-header">
+        <h1 class="member-logo">
+			<image href="/" src="../images/1.png" width="100%" height="100%" class="member-logo__img" alt="coupang"></image>
+
+        </h1>
+    </header>
+	<br>
+	<h2>Foxlee_Shop_Please Login:</h2>
+	<br>
+	<div class="member-main">
+		<div class="member-login _loginRoot">
+
+		<form action="" class="form-inline" method="post">
+			<div class="login__content login__content--input">
+				<div class="member__field-wrap">
+					<label class="member__input-wrap" for="login-email-input">
+						<span class="member__input-group member__input-group--icon-label">
+							<i class="member__sprite member__sprite--email"></i>
+						</span>
+						<span class="member__input-group">
+							<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Email" name="email" value="{{request.form.email}}">
+						</span>
+					</label>
+				</div>
+				<!--<div class="member__field-wrap">
+					<label class="member__input-wrap" for="login-email-input">
+						<span class="member__input-group member__input-group--icon-label">
+							<i class="member__sprite member__sprite--password"></i>
+						</span>
+						<span class="member__input-group">
+							<input type="password" class="member__input _loginPasswordInput" placeholder = "Password" name="password" value="{{request.form.password}}">
+						</span>
+					</label>
+				</div>-->
+			</div>
+			<div class="login__content login__content--trigger">
+				<input class="login__button login__button--submit _loginSubmitButton" type="submit" value="Reset Password">
+			</div>
+			<hr class="login__separator">
+			<!--<a class="login__button login__button--join _loginJoinLink" href="/register">Sing up</a>-->
+		</form>
+		<hr class="login__separator">
+		{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+		<div class="alert alert-{{ category }}">
+			<h1>{{ message }}<h1>
+		</div>
+		{% endfor %}
+        {% endif %}
+        {% endwith %}
+		<a href="/reset/">Forgot Password?</a>
+		</div>
+	</div>
+</div>
+</body>

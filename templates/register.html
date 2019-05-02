@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Foxlee-shopping-register</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main_login.css') }}">
+  </head>
+<body class="member-container member-root--clen page-join page-join-memberJoinFrm env-production">
+	<div class = "member-wrapper member-wrapper--flex">
+		<hearder class="member-header">
+			<h1 class="member-logo">Foxlee-shop-REGISTER</h1>
+		</hearder>
+		{% from "_formhelpers.html" import render_field %}
+		<div class="member-main">
+		<div method=post action="/register/">
+			<div class="join__content">
+				<div class="member__field-wrap">
+				<dl>
+					{{render_field(form.username)}}
+					{{render_field(form.email)}}
+					{{render_field(form.password)}}
+					{{render_field(form.confirm)}}
+					{{render_field(form.accept_tos)}}
+				</dl>
+			</div>
+			<div class="join__footer _joinTriggerRoot">
+			<p><input type=submit value=Register></p>
+			</div>
+
+		</form>
+		</div>
+		{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+		{{ message }}
+		{% endfor %}
+        {% endif %}
+        {% endwith %}
+
+		{% if error %}
+			<p class="error"><strong>Error:</strong>{{error}}</p>
+		{% endif %}
+
+	</div>
+</body>
+</html>
