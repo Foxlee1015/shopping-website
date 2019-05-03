@@ -43,6 +43,7 @@ def login():
                     return render_template("login.html")
 
                 data1 = c.fetchone()[2]  # 테이블에서 비밀번호 가져오기
+                c.execute("set names utf8")  # db에서 닉네임 가져오기 전(한글 닉네임)
                 data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
                 data2 = c.fetchone()[0] # 테이블에서 해당 이메일의 username 가져오기
 
@@ -98,6 +99,7 @@ def register_page():
                 return render_template('register_test.html', form=form)
 
             else:
+                c.execute("set names utf8") # db에 한글 저장
                 c.execute("INSERT INTO user_list (username, password, email, tracking) VALUES (%s, %s, %s, %s)",
                           (thwart(username), thwart(password), thwart(email),
                            thwart("/introduction-to-python-programming/")))
