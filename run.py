@@ -225,6 +225,7 @@ def board_page():
                 pass_data = form.password.data  # 암호화 필요
                 password = hashlib.sha256(pass_data.encode()).hexdigest()
                 if data1 == password:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
+                    c.execute("set names utf8")  # db 한글 저장
                     c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)", (thwart(title), thwart(content), thwart(email)))
                     conn.commit()
                     flash(data2 + "님 빠른 시일 내에 연락드리겠습니다.")
@@ -243,18 +244,19 @@ def board_page():
 @app.route('/board', methods=["GET","POST"])
 def board_main():
     c, conn = connection()
-    board_count = c.execute("SELECT * FROM board")  # 갯수
-    board_list = [[None for k in range(4)] for j in range(board_count)]
-    board_count_n = board_count
-    for count in range(board_count):
-        count_board = str(count+1)
-        #print(count_board)
-        for i in range(4):
-            board_data = c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_board)])  # 갯수
-            board_data1 = c.fetchone()[i]  # 번호
-            board_list[count][i] =board_data1
-    #print(board_list)
-    return render_template("board_main.html", board_list=board_list, board_count_n=board_count_n)
+    board_count = c.execute("SELECT board_n FROM board")                           # 게시된 글의 수.
+    board_count_number = board_count                                               # board_count_number 수 저장
+    board_n_list = c.fetchall()                                                   # c.exectue 에서 게시판의 넘버 정보 가져오기
+    board_list = [[None for k in range(4)] for j in range(board_count_number)]    # 갯수에 맞춰 데이터가 들어갈 2차 행렬
+    for x in range(board_count_number):                                            # 게시글의 수 loop
+        count_number = str(board_n_list[x][0])                                     # 튜플에 저장된 게실글의 넘버만 가져와서 문자열로( thart에 들어갈 문자열 )   board_n_list = ((1,),(2,),(3,),(6,)) 처럼 저장됨
+        for i in range(4):                                                         # i 0~3 (보드넘버, 제목, 내용, 이메일)
+            c.execute("set names utf8")                                            # 한글 데이터
+            board_data = c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_number)])  # count_number = 게시글의 넘버 // 보드 넘버를 기준으로 보드넘버, 제목, 내용, 이메일 가져옴
+            board_data1 = c.fetchone()[i]
+            board_list[x][i] = board_data1                                         # 가져온 데이터 리스트에 저장
+    print(board_list)
+    return render_template("board_main.html", board_list=board_list, board_count_n=board_count_number)
 
 class LocationForm(Form):
     address = StringField('Address', [validators.Length(min=1, max=20)])
