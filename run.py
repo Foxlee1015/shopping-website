@@ -4,7 +4,7 @@ from flask_mail import Mail
 from dbconnect import connection
 from MySQLdb import escape_string as thwart
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
-#from passlib.hash import sha256_crypt
+import hashlib
 import gc
 from functools import wraps
 
@@ -47,7 +47,9 @@ def login():
                 data2 = c.fetchone()[0] # 테이블에서 해당 이메일의 username 가져오기
 
                 if data != 0:   # data 해당 email이 존재하고
-                    if data1 == form.password.data:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터악 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
+                    pass_data = form.password.data  # 암호화 필요
+                    password = hashlib.sha256(pass_data.encode()).hexdigest()
+                    if data1 == password:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터악 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
                         session['logged_in'] = True
                         session['email'] = request.form['email']
                         flash(data2 + "님 즐거운 쇼핑 되십시오. You are now logged in")
@@ -80,7 +82,8 @@ def register_page():
         if request.method == "POST" and form.validate():
             username = form.username.data
             email = form.email.data
-            password = form.password.data  #암호화 필요
+            pass_data = form.password.data  #암호화 필요
+            password = hashlib.sha256(pass_data.encode()).hexdigest()
             c, conn = connection()
 
             x = c.execute("SELECT * FROM user_list WHERE username = (%s)",
