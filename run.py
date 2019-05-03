@@ -35,7 +35,7 @@ def login():
     except:          # 세션에서 오류뜰때 except = 로그인 되지 않은 상태면 log 페이지로 이동
             form = LoginForm(request.form)
             c, conn = connection()
-            if request.method == "POST" :
+            if request.method == "POST" and form.validate():
                 email = form.email.data
                 data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)])
                 if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
@@ -58,8 +58,8 @@ def login():
                     if data1 != form.password.data:
                         flash('Wrong password')
                         return render_template("login.html") # error=error
-            gc.collect()
-            return render_template("login.html")
+            #gc.collect()
+            return render_template("login.html", form=form)
     #except Exception as e:
     #    flash(e)
     #    flash("Invalid credentials, try again.")
@@ -282,10 +282,16 @@ def my_page():
             c.close()
             gc.collect()
             return render_template("home.html", form=form)
-
-            return render_template("mypage.html", form=form)
-        else:
-            return render_template("mypage.html", form=form)
+            #return render_template("mypage.html", form=form)
+        else:                                                        # 로그인된 상태에서 email 정보 가져오고, 이 메일을 기반으로 저장된 데이터를 가져와서 빈칸에 넣는다.
+            c, conn = connection()
+            data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
+            if data != 0:
+                c.execute("set names utf8")
+                location_data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
+                location_data_all = c.fetchall()
+                print(location_data_all)
+            return render_template("mypage.html", form=form, location_data_all=location_data_all)
     except Exception as e:
         return render_template("mypage.html", form=form)
 

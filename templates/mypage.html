@@ -53,7 +53,7 @@
   </div>
     <form method="POST" action="">
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4">배송지를 입력해주세요.</legend>
+            <legend class="border-bottom mb-4">{{ location_data_all[0][0] }} 님의 배송지를 입력해주세요.  </legend>
             <div class="form-group">
                 {{ form.address.label(class="form-control-label") }}
                 {% if form.address.errors %}
@@ -64,7 +64,8 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.address(class="form-control form-control-lg") }}
+                    <!--{{ form.address(class="form-control form-control-lg") }}-->
+                    <input type="text" class="form-control form-control-lg" placeholder = "{{ location_data_all[0][1] }}" name="address" value="{{request.form.address}}">
                 {% endif %}
             </div>
             <div class="form-group">
@@ -77,7 +78,8 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.zipcode(class="form-control form-control-lg") }}
+                    <!--{{ form.zipcode(class="form-control form-control-lg") }}-->
+                    <input type="text" class="form-control form-control-lg" placeholder = "{{ location_data_all[0][2] }}" name="zipcode" value="{{request.form.zipcode}}">
                 {% endif %}
             </div>
             <div class="form-group">
@@ -90,7 +92,8 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.phonenumber(class="form-control form-control-lg") }}
+                    <!--{{ form.phonenumber(class="form-control form-control-lg") }}-->
+                    <input type="text" class="form-control form-control-lg" placeholder = "{{ location_data_all[0][3] }}" name="phonenumber" value="{{request.form.phonenumber}}">
                 {% endif %}
             </div>
         </fieldset>
