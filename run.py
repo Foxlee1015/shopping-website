@@ -291,7 +291,10 @@ def my_page():
                 location_data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
                 location_data_all = c.fetchall()
                 print(location_data_all)
-            return render_template("mypage.html", form=form, location_data_all=location_data_all)
+                return render_template("mypage.html", form=form, location_data_all=location_data_all)
+            else:
+                location_data_all = ((""),(""),(""),(""),)   # data == 0 인 경우에는 db에 location data 가 없으므로 빈 행렬로 html 에 빈칸으로 출력
+                return render_template("mypage.html", form=form, location_data_all=location_data_all)
     except Exception as e:
         return render_template("mypage.html", form=form)
 
