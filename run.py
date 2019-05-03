@@ -19,7 +19,7 @@ login_manager.login_message_category = 'info'
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html')
+        return render_template('home.html')
 
 class LoginForm(Form):
     email = StringField('Email Address', [validators.Length(min=6, max=50)])
@@ -53,7 +53,7 @@ def login():
                         session['logged_in'] = True
                         session['email'] = request.form['email']
                         flash(data2 + "님 즐거운 쇼핑 되십시오. You are now logged in")
-                        return redirect(url_for("home"))
+                        return render_template("home.html", username=data2)
                     if data1 != form.password.data:
                         flash('Wrong password')
                         return render_template("login.html") # error=error
@@ -194,7 +194,6 @@ def logout():
 
 class BoardForm(Form):
     title = StringField('Title', [validators.Length(min=1, max=20)])
-    email = StringField('Email', [validators.Length(min=1, max=20)])
     content = StringField('Content', [validators.Length(min=10, max=50)])
     password = PasswordField('Password', [validators.data_required(), validators.EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
@@ -205,11 +204,11 @@ def board_page():
     try:
         if session['logged_in'] != True:
             return redirect(url_for('login'))
+        email = session['email']
         form = BoardForm(request.form)
         if request.method == "POST" and form.validate():
             title = form.title.data
             content = form.content.data
-            email = form.email.data
             #password = form.password.data  #암호화 필요
             c, conn = connection()
             data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)]) # 이메일 존재하는지 먼저 확인
@@ -235,7 +234,7 @@ def board_page():
                     flash('Wrong password')
                     return render_template("board_write.html", form=form)
         else:
-            return render_template("board_write.html", form=form)
+            return render_template("board_write.html", form=form, email=email)
     except Exception as e:
         return render_template("board_write.html", form=form)
 
@@ -285,8 +284,6 @@ def my_page():
             return render_template("mypage.html", form=form)
     except Exception as e:
         return render_template("mypage.html", form=form)
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
