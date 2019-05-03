@@ -204,17 +204,13 @@ class BoardForm(Form):
 def board_page():
     try:
         if session['logged_in'] != True:
-            print('2')
             return redirect(url_for('login'))
-        print('1')
-        #session['logged_in'] = True
         form = BoardForm(request.form)
         if request.method == "POST" and form.validate():
             title = form.title.data
             content = form.content.data
             email = form.email.data
-            password = form.password.data  #암호화 필요
-            print(title, content, email, password)
+            #password = form.password.data  #암호화 필요
             c, conn = connection()
             data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)]) # 이메일 존재하는지 먼저 확인
             if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
@@ -225,13 +221,10 @@ def board_page():
             data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
 
             if data != 0:  # data 해당 email이 존재하고
-                print('3')
-                if data1 == form.password.data:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
-                    print('4')
-                    #session['logged_in'] = True
-                    #session['email'] = request.form['email']
+                pass_data = form.password.data  # 암호화 필요
+                password = hashlib.sha256(pass_data.encode()).hexdigest()
+                if data1 == password:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
                     c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)", (thwart(title), thwart(content), thwart(email)))
-                    print('5')
                     conn.commit()
                     flash(data2 + "님 빠른 시일 내에 연락드리겠습니다.")
                     c.close()
@@ -261,6 +254,39 @@ def board_main():
             board_list[count][i] =board_data1
     #print(board_list)
     return render_template("board_main.html", board_list=board_list, board_count_n=board_count_n)
+
+class LocationForm(Form):
+    address = StringField('Address', [validators.Length(min=1, max=20)])
+    zipcode = StringField('Zipcode', [validators.Length(min=1, max=20)])
+    phonenumber = StringField('Phonenumber', [validators.Length(min=10, max=13)])
+    submit = SubmitField('ok')
+
+@app.route('/mypage', methods=["GET", "POST"])
+def my_page():
+    try:
+        if session['logged_in'] != True:
+            return redirect(url_for('login'))
+        form = LocationForm(request.form)
+        email = session['email']          #로그인된 상태에서의 이메일 정보 가져와서 db에 아래 정보와 같이 저장
+        if request.method == "POST" and form.validate():
+            address = form.address.data
+            zipcode = form.zipcode.data
+            phonenumber = form.phonenumber.data
+            c, conn = connection()
+            c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", (thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)))
+            conn.commit()
+            flash(" 소중한 정보 감사합니다.")
+            c.close()
+            gc.collect()
+            return render_template("home.html", form=form)
+
+            return render_template("mypage.html", form=form)
+        else:
+            return render_template("mypage.html", form=form)
+    except Exception as e:
+        return render_template("mypage.html", form=form)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
