@@ -111,7 +111,7 @@ def register_page():
                 gc.collect()
 
                 session['logged_in'] = True
-                session['email'] = form.email.data  #request.form['email']  # 처음 가입할때 가입된 이메일로 접속하도록 설정
+                session['email'] = form.email.data  #request.form['email']  # 처음 가입할때 기입한 이메일로 접속하도록 설정
                 return redirect(url_for('home'))
         flash("Type the info")
         return render_template("register_test.html", form=form)
@@ -207,6 +207,7 @@ def board_page():
         if session['logged_in'] != True:
             return redirect(url_for('login'))
         form = BoardForm(request.form)
+        email = session['email']                                  # 로그인 True 상태에서 email 정보 가져오고 하단 return email 정보 제공
         if request.method == "POST" and form.validate():
             title = form.title.data
             content = form.content.data
@@ -235,12 +236,10 @@ def board_page():
                     flash('Wrong password')
                     return render_template("board_write.html", form=form)
         else:
-            session['logged_in'] = True
-            email = session['email']
+            #session['logged_in'] = True #email = session['email'] # email = session['email']  위에서 email 정보 얻음
             return render_template("board_write.html", form=form, email=email)
     except Exception as e:
-        session['logged_in'] = True
-        email = session['email']
+        #session['logged_in'] = True #email = session['email']  위에서 email 정보 얻음
         return render_template("board_write.html", form=form, email=email)
 
 @app.route('/board', methods=["GET","POST"])
@@ -278,21 +277,33 @@ def my_page():
             zipcode = form.zipcode.data
             phonenumber = form.phonenumber.data
             c, conn = connection()
-            c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", (thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)))
-            conn.commit()
-            flash(" 소중한 정보 감사합니다.")
-            c.close()
-            gc.collect()
-            return render_template("home.html", form=form)
-            #return render_template("mypage.html", form=form)
-        else:                                                        # 로그인된 상태에서 email 정보 가져오고, 이 메일을 기반으로 저장된 데이터를 가져와서 빈칸에 넣는다.
+            data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
+            if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
+                c, conn = connection()
+                c.execute("set names utf8") # 배송 정보 한글 저장.
+                c.execute("UPDATE user_location  SET address=(%s), zipcode=(%s) WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(email)])             # phonenumber 업데이트 실패  -> 컬럼 특성이 int라서?
+                conn.commit()
+                flash("배송지 업데이트에 성공했습니다.")
+                c.close()
+                gc.collect()
+                return render_template("home.html", form=form)                  # 새로 입력되는 주소로 업데이트 되고 홈으로 돌아감
+
+            else: #data == 0:           # 기존 배송 데이터가 없으면 INSERT
+                c, conn = connection()
+                c.execute("set names utf8") # 배송 정보 한글 저장.
+                c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber))
+                conn.commit()
+                flash(" 소중한 정보 감사합니다.")
+                c.close()
+                gc.collect()
+                return render_template("home.html", form=form)       # 데이터 입력하고 홈으로 돌아감
+        else:                                                        # 로그인된 상태에서 email 정보 가져오고, 이 메일을 기반으로 저장된 데이터를 가져와서 기존의 데이터를 빈칸에 넣는다.
             c, conn = connection()
             data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
             if data != 0:
                 c.execute("set names utf8")
                 location_data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
                 location_data_all = c.fetchall()
-                print(location_data_all)
                 return render_template("mypage.html", form=form, location_data_all=location_data_all)
             else:
                 location_data_all = ((""),(""),(""),(""),)   # data == 0 인 경우에는 db에 location data 가 없으므로 빈 행렬로 html 에 빈칸으로 출력
