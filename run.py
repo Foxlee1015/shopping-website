@@ -111,7 +111,7 @@ def register_page():
                 gc.collect()
 
                 session['logged_in'] = True
-                session['username'] = username
+                session['email'] = form.email.data  #request.form['email']  # 처음 가입할때 가입된 이메일로 접속하도록 설정
                 return redirect(url_for('home'))
         flash("Type the info")
         return render_template("register_test.html", form=form)
@@ -206,12 +206,10 @@ def board_page():
     try:
         if session['logged_in'] != True:
             return redirect(url_for('login'))
-        email = session['email']
         form = BoardForm(request.form)
         if request.method == "POST" and form.validate():
             title = form.title.data
             content = form.content.data
-            #password = form.password.data  #암호화 필요
             c, conn = connection()
             data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)]) # 이메일 존재하는지 먼저 확인
             if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
@@ -237,9 +235,13 @@ def board_page():
                     flash('Wrong password')
                     return render_template("board_write.html", form=form)
         else:
+            session['logged_in'] = True
+            email = session['email']
             return render_template("board_write.html", form=form, email=email)
     except Exception as e:
-        return render_template("board_write.html", form=form)
+        session['logged_in'] = True
+        email = session['email']
+        return render_template("board_write.html", form=form, email=email)
 
 @app.route('/board', methods=["GET","POST"])
 def board_main():
