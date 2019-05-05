@@ -217,8 +217,8 @@ def board_page():
                 flash('This email doesnt exist')
                 return render_template("login.html")
             data1 = c.fetchone()[2]  # 테이블에서 비밀번호 가져오기
-            data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
-            data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
+            #data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
+            #data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
 
             if data != 0:  # data 해당 email이 존재하고
                 pass_data = form.password.data  # 암호화 필요
@@ -227,6 +227,8 @@ def board_page():
                     c.execute("set names utf8")  # db 한글 저장
                     c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)", (thwart(title), thwart(content), thwart(email)))
                     conn.commit()
+                    data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
+                    data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
                     flash(data2 + "님 빠른 시일 내에 연락드리겠습니다.")
                     c.close()
                     conn.close()
