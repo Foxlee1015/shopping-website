@@ -48,7 +48,7 @@ def login():
                 c.execute("set names utf8")  # db에서 닉네임 가져오기 전(한글 닉네임)
                 data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
                 data2 = c.fetchone()[0] # 테이블에서 해당 이메일의 username 가져오기
-
+                username = data2
                 if data != 0:   # data 해당 email이 존재하고
                     pass_data = form.password.data  # 암호화 필요
                     password = hashlib.sha256(pass_data.encode()).hexdigest()
@@ -56,7 +56,8 @@ def login():
                         session['logged_in'] = True
                         session['email'] = request.form['email']
                         flash(data2 + "님 즐거운 쇼핑 되십시오. You are now logged in")
-                        return render_template("home.html", username=data2)
+                        print(username)
+                        return render_template("home.html", username=username)
                     if data1 != form.password.data:
                         flash('Wrong password')
                         return render_template("login.html") # error=error
@@ -85,7 +86,7 @@ def register_page():
         if request.method == "POST" and form.validate():
             username = form.username.data
             email = form.email.data
-            pass_data = form.password.data  #암호화 필요
+            pass_data = form.password.data
             password = hashlib.sha256(pass_data.encode()).hexdigest()
             c, conn = connection()
 
@@ -191,8 +192,16 @@ def login_required(f):
 @app.route("/logout/")
 @login_required
 def logout():
+    session['logged_in'] = True
+    email = session['email']
+    c, conn = connection()
+    c.execute("set names utf8")
+    data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
+    data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
+    username = data2
+    print(email, username)
     session.clear()
-    flash("You have been logged out!")
+    flash(username + "You have been logged out!")
     gc.collect()
     return redirect(url_for('home'))
 
