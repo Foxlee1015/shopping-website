@@ -27,7 +27,8 @@
 							<i class="member__sprite member__sprite--email"></i>
 						</span>
 						<span class="member__input-group">
-							<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Email" name="email" value="{{request.form.email}}">
+							<!--<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Email" name="email" value="{{request.form.email}}">-->
+							{{ form.email(class="member__input _loginIdInput ui-autocomplete-input", placeholder ="Email") }}
 						</span>
 					</label>
 				</div>
@@ -37,7 +38,8 @@
 							<i class="member__sprite member__sprite--password"></i>
 						</span>
 						<span class="member__input-group">
-							<input type="password" class="member__input _loginPasswordInput" placeholder = "Password" name="password" value="{{request.form.password}}">
+							<!--<input type="password" class="member__input _loginPasswordInput" placeholder = "Password" name="password" value="{{request.form.password}}">-->
+							{{ form.password(autocomplete="off", class="member__input _loginPasswordInput", placeholder ="Password", type="password") }}
 						</span>
 					</label>
 				</div>
@@ -49,7 +51,8 @@
 							<i class="member__sprite member__sprite--password"></i>
 						</span>
 						<span class="member__input-group">
-							<input type="password" class="member__input _loginPasswordInput" placeholder = "Confirm" name="confirm" value="{{request.form.confirm}}">
+							<!--<input type="password" class="member__input _loginPasswordInput" placeholder = "Confirm" name="confirm" value="{{request.form.confirm}}">-->
+							{{ form.password(autocomplete="off", class="member__input _loginPasswordInput", placeholder ="Confirm", type="password") }}
 						</span>
 					</label>
 				</div>
@@ -60,7 +63,8 @@
 							<i class="member__sprite member__sprite--email"></i>
 						</span>
 						<span class="member__input-group">
-							<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Username" name="username" value="{{request.form.username}}">
+							<!--<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Username" name="username" value="{{request.form.username}}">-->
+							{{ form.username(class="member__input _loginIdInput ui-autocomplete-input", placeholder ="Username") }}
 						</span>
 					</label>
 				</div>

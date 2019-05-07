@@ -69,11 +69,10 @@ def login():
     #    return render_template("login.html", error=error)
 
 class RegistrationForm(Form):
-    username = StringField('Username', [validators.Length(min=4, max=20)])
-    email = StringField('Email Address', [validators.Length(min=6, max=50)])
+    username = TextAreaField('Username', [validators.Length(min=4, max=20)])
+    email = TextAreaField('Email Address', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [validators.data_required(), validators.EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
-    #accept_tos = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.data_required()])
     submit = SubmitField('Register')
 
 @app.route('/register/', methods=["GET", "POST"])
