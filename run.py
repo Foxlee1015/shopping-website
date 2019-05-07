@@ -286,15 +286,20 @@ def my_page():
         form = LocationForm(request.form)
         email = session['email']          #로그인된 상태에서의 이메일 정보 가져와서 db에 아래 정보와 같이 저장
         if request.method == "POST" and form.validate():
+            print('a')
             address = form.address.data
             zipcode = form.zipcode.data
             phonenumber = form.phonenumber.data
+            print(address, zipcode, phonenumber)
             c, conn = connection()
             data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
             if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
+                print('b')
                 c, conn = connection()
                 c.execute("set names utf8") # 배송 정보 한글 저장.
-                c.execute("UPDATE user_location  SET address=(%s), zipcode=(%s) WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(email)])             # phonenumber 업데이트 실패  -> 컬럼 특성이 int라서?
+                print('c')
+                c.execute("UPDATE user_location SET address=(%s), zipcode=(%s), phonenumber=(%s) WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(phonenumber), thwart(email)])               # phonenumber 업데이트 실패  -> 컬럼 특성이 int라서?
+                print('d')
                 conn.commit()
                 flash("배송지 업데이트에 성공했습니다.")
                 c.close()
@@ -317,6 +322,8 @@ def my_page():
                 c.execute("set names utf8")
                 location_data = c.execute("SELECT * FROM user_location WHERE email = (%s)", [thwart(email)])
                 location_data_all = c.fetchall()
+                print('2')
+                print(location_data_all)
                 return render_template("mypage.html", form=form, location_data_all=location_data_all)
             else:
                 location_data_all = ((""),(""),(""),(""),)   # data == 0 인 경우에는 db에 location data 가 없으므로 빈 행렬로 html 에 빈칸으로 출력
