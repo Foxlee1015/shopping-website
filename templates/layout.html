@@ -10,23 +10,22 @@
     <!--<link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/blog/">-->
     <!-- Bootstrap core CSS -->
     <!--<link href="static/main.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">-->
-    <script type="text/javascript"> <!--
-        var imgArray = new Array();
-        imgArray[0] = "1.png";
-        imgArray[1] = "2.png";
-        imgArray[2] = "3.png";
-        imgArray[3] = "4.png";
-        imgArray[4] = "5.png";
+    <script type="text/javascript">
+    var imgArray=new Array();
+    imgArray[0]="1.png";
+    imgArray[1]="2.png";
+    imgArray[2]="3.png";
+    imgArray[3]="4.png";
 
-        function showImage() {
-            var imgNum = Math.round(Math.random()*2);
-            var objImg = document.getElementById("introImg");
-            objImg.src = imgArray[imgNum];
-            setTimeout(showImage(), 3000);
-        }
-        -->
+    function showImage(){
+     var imgNum=Math.round(Math.random()*3);
+     var objImg=document.getElementById("introimg");
+     objImg.src=imgArray[imgNum];
+     setTimeout(showImage,5000);
+    }
 
     </script>
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
     <style>
@@ -72,7 +71,9 @@
         {% endfor %}
         {% endif %}
         {% endwith %}
-  <body>
+  <body onload="showImage()" >
+
+
     <div class="container">
   <header class="blog-header py-3">
     <div class="row flex-nowrap justify-content-between align-items-center">
@@ -117,7 +118,7 @@
   <!--<div class="test1" onload="showImage()">
       <img id ="introImg" border="0">
   </div>-->
-  <div class="jumbotron p-4 p-md-5 text-white rounded bg-dark" onload="showImage()">
+  <div class="jumbotron p-4 p-md-5 text-white rounded bg-dark">
       <img id ="introImg" border="0">
       <div class="col-md-6 px-0">
 

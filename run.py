@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from wtforms import Form, BooleanField, PasswordField, validators, StringField, SubmitField
+from forms_routes import forms, routes
 from flask_mail import Mail
 from dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -7,6 +8,7 @@ from flask_login import login_user, current_user, logout_user, login_required, L
 import hashlib
 import gc
 from functools import wraps
+#from forms_routes import app
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
@@ -23,7 +25,7 @@ def home():
 
 class LoginForm(Form):
     email = StringField('Email Address', [validators.Length(min=6, max=50)])
-    password = PasswordField('New Password', [validators.data_required()])
+    password = PasswordField('Password', [validators.data_required()])
     submit = SubmitField('Login')
 
 @app.route('/login/', methods=["GET", "POST"])
@@ -68,7 +70,7 @@ def login():
 class RegistrationForm(Form):
     username = StringField('Username', [validators.Length(min=4, max=20)])
     email = StringField('Email Address', [validators.Length(min=6, max=50)])
-    password = PasswordField('New Password', [validators.data_required(), validators.EqualTo('confirm', message='Passwords must match')])
+    password = PasswordField('Password', [validators.data_required(), validators.EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
     #accept_tos = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.data_required()])
     submit = SubmitField('Register')
@@ -293,7 +295,7 @@ def my_page():
             else: #data == 0:           # 기존 배송 데이터가 없으면 INSERT
                 c, conn = connection()
                 c.execute("set names utf8") # 배송 정보 한글 저장.
-                c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber))
+                c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", [thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)])
                 conn.commit()
                 flash(" 소중한 정보 감사합니다.")
                 c.close()
@@ -312,6 +314,7 @@ def my_page():
                 return render_template("mypage.html", form=form, location_data_all=location_data_all)
     except Exception as e:
         return render_template("mypage.html", form=form)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
