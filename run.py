@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
-from wtforms import Form, BooleanField, PasswordField, validators, StringField, SubmitField
+from wtforms import Form, BooleanField, PasswordField, validators, StringField, SubmitField, TextAreaField
 from forms_routes import forms, routes
 from flask_mail import Mail
 from dbconnect import connection
@@ -24,7 +24,7 @@ def home():
         return render_template('home.html')
 
 class LoginForm(Form):
-    email = StringField('Email Address', [validators.Length(min=6, max=50)])
+    email = TextAreaField('Email Address', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [validators.data_required()])
     submit = SubmitField('Login')
 
@@ -206,8 +206,8 @@ def logout():
     return redirect(url_for('home'))
 
 class BoardForm(Form):
-    title = StringField('Title', [validators.Length(min=1, max=20)])
-    content = StringField('Content', [validators.Length(min=10, max=50)])
+    title = TextAreaField('Title', [validators.Length(min=1, max=20)])
+    content = TextAreaField('Content', [validators.Length(min=10, max=50)])
     password = PasswordField('Password', [validators.data_required(), validators.EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
     submit = SubmitField('ok')

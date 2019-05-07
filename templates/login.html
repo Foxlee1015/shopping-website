@@ -19,7 +19,8 @@
 	<div class="member-main">
 		<div class="member-login _loginRoot">
 
-		<form action="" class="form-inline" method="post">
+		<form action="" class="form-inline" method="post" autocomplete="off">
+			<fieldset class="form-group">
 			<div class="login__content login__content--input">
 				<div class="member__field-wrap">
 					<label class="member__input-wrap" for="login-email-input">
@@ -27,7 +28,8 @@
 							<i class="member__sprite member__sprite--email"></i>
 						</span>
 						<span class="member__input-group">
-							<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Email" name="email" value="{{request.form.email}}">
+							<!--<input type="text" class="member__input _loginIdInput ui-autocomplete-input" placeholder = "Email" name="email" value="{{request.form.email}}">-->
+							{{ form.email(class="member__input _loginIdInput ui-autocomplete-input", placeholder ="Email") }}
 						</span>
 					</label>
 				</div>
@@ -37,7 +39,8 @@
 							<i class="member__sprite member__sprite--password"></i>
 						</span>
 						<span class="member__input-group">
-							<input type="password" class="member__input _loginPasswordInput" placeholder = "Password" name="password" value="{{request.form.password}}">
+							{{ form.password(autocomplete="off", class="member__input _loginPasswordInput", placeholder ="Password", type="password") }}
+							<!--<input type="password" class="member__input _loginPasswordInput" placeholder = "Password" name="password" value="{{request.form.password}}">-->
 						</span>
 					</label>
 				</div>
@@ -47,6 +50,7 @@
 			</div>
 			<hr class="login__separator">
 			<a class="login__button login__button--join _loginJoinLink" href="/register">Sing up</a>
+			</fieldset>
 		</form>
 		<hr class="login__separator">
 		{% with messages = get_flashed_messages(with_categories=true) %}

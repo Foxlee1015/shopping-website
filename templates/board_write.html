@@ -75,7 +75,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.title(class="form-control form-control-lg") }}
+                    {{ form.title(class="textarea form-control-title", cols="100", row="5") }}
                 {% endif %}
             </div>
 
@@ -89,7 +89,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.content(class="form-control form-control-lg-content") }}
+                    {{ form.content(class="textarea form-control", cols="5", rows="5") }}
                 {% endif %}
             </div>
 
@@ -103,7 +103,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.password(class="form-control form-control-lg-pass") }}
+                    {{ form.password(class="form-control form-control-lg-pass", autocomplete="off") }}
                 {% endif %}
             </div>
             <div class="form-group">
@@ -116,7 +116,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ form.confirm(class="form-control form-control-lg-pass") }}
+                    {{ form.confirm(class="form-control form-control-lg-pass", autocomplete="off") }}
                 {% endif %}
             </div>
         </fieldset>
