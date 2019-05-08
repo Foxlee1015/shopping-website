@@ -1,4 +1,4 @@
-from wtforms import Form, PasswordField, validators, StringField, SubmitField, TextAreaField, FileField # FileAllowed # FileRequired
+from wtforms import Form, PasswordField, validators, StringField, SubmitField, TextAreaField, FileField
 from flask_wtf.file import FileAllowed, FileRequired
 
 class LoginForm(Form):

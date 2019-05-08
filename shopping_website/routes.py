@@ -11,16 +11,15 @@ import hashlib
 import gc
 from functools import wraps
 from werkzeug.utils import secure_filename
-
 #from flask_mail import Mail
 
 #layout list
-Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]
+Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
 @app.route("/")
 @app.route("/home")
 def home():
-        return render_template('home.html', len=len(Categories), Categories=Categories)
+        return render_template('home.html')
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -148,7 +147,6 @@ def login_required(f):
         else:
             flash("You need to login first")
             return redirect(url_for('login'))
-
     return wrap
 
 @app.route("/logout/")
@@ -174,14 +172,11 @@ def board_page():
             if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
                 flash('This email doesnt exist')
                 return render_template("login.html")
-            data1 = c.fetchone()[2]  # 테이블에서 비밀번호 가져오기
-            #data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
-            #data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
-
-            if data != 0:  # data 해당 email이 존재하고
+            data1 = c.fetchone()[2]                                # 테이블에서 비밀번호 가져오기
+            if data != 0:                                          # data 해당 email이 존재하고
                 pass_data = form.password.data  # 암호화 필요
                 password = hashlib.sha256(pass_data.encode()).hexdigest()
-                if data1 == password:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
+                if data1 == password:                              # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
                     c.execute("set names utf8")  # db 한글 저장
                     c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)", (thwart(title), thwart(content), thwart(email)))
                     conn.commit()
@@ -216,7 +211,6 @@ def board_main():
             board_data = c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_number)])  # count_number = 게시글의 넘버 // 보드 넘버를 기준으로 보드넘버, 제목, 내용, 이메일 가져옴
             board_data1 = c.fetchone()[i]
             board_list[x][i] = board_data1                                         # 가져온 데이터 리스트에 저장
-    print(board_list)
     return render_template("board_main.html", board_list=board_list, board_count_n=board_count_number)
 
 @app.route('/mypage', methods=["GET", "POST"])
@@ -281,43 +275,24 @@ def register_product():
             flash('no name of file')
             return render_template("register_product.html", form=form)
         else:
-            filename = secure_filename(file.filename)                      # 파일 이름을 보안 ??  -----> 같은 이름 이미지 업로드시 전에 이미지 사라지므로 방안 필요
+            filename = secure_filename(file.filename)
             filename =  random_hex + filename
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             c, conn = connection()
             c.execute("set names utf8")
             c.execute("INSERT INTO product_info (product_name, product_intro, filename) VALUES (%s, %s, %s)", [thwart(product_name), thwart(product_intro), thwart(filename)])
             conn.commit()
-        return render_template("home.html", form=form)                                             #### DB 에 저장해서 넘버와 링크 저장해서 같이 저장, 같이 불러오기
+        return render_template("home.html", form=form)                                             #### DB에 저장해서 넘버와 파일이름 저장해서 같이 저장, 같이 불러오기
     else:
-        #filename = secure_filename(file.filename)
-        #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        #product_picture = save_picture(form.product_pic.data)
         return render_template("register_product.html", form=form)
 
         """
-    else:
-        product_name = form.product_name.data
-        product_intro = form.product_intro.data
-        #product_picture = save_picture(form.product_pic.data)
-        print('y')
-        print(product_name, product_intro)
-        print('2')
-        #image_file = url_for('static', filename='pics/' + product_name)
-        return render_template("register_product.html", form=form)
 
-
-    try:
         if session['logged_in'] != True:
             return redirect(url_for('login'))
         form = ProductForm(request.form)
         email = session['email']                                  # 로그인 True 상태에서 email 정보 가져오고 하단 return email 정보 제공
-        
-            product_name = form.product_name.data
-            product_intro = form.product_intro.data
-            product_pic
-
-
+  
             c, conn = connection()
             data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)]) # 이메일 존재하는지 먼저 확인
             if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
