@@ -268,6 +268,7 @@ def my_page():
 
 @app.route('/register_product', methods=["GET", "POST"])                        #  << 실수, methods get, post 추가 안함 >>
 def register_product():
+    random_hex = secrets.token_hex(8)
     form = ProductForm(request.form)
     if request.method == "POST" :
         product_name = form.product_name.data
@@ -281,8 +282,13 @@ def register_product():
             return render_template("register_product.html", form=form)
         else:
             filename = secure_filename(file.filename)                      # 파일 이름을 보안 ??  -----> 같은 이름 이미지 업로드시 전에 이미지 사라지므로 방안 필요
+            filename =  random_hex + filename
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return "성공"                                                      #### DB 에 저장해서 넘버와 링크 저장해서 같이 저장, 같이 불러오기
+            c, conn = connection()
+            c.execute("set names utf8")
+            c.execute("INSERT INTO product_info (product_name, product_intro, filename) VALUES (%s, %s, %s)", [thwart(product_name), thwart(product_intro), thwart(filename)])
+            conn.commit()
+        return render_template("home.html", form=form)                                             #### DB 에 저장해서 넘버와 링크 저장해서 같이 저장, 같이 불러오기
     else:
         #filename = secure_filename(file.filename)
         #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
