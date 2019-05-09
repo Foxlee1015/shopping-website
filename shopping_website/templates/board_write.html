@@ -35,6 +35,26 @@
     <!-- Custom styles for this template -->
     <!--<link href="blog.css" rel="stylesheet">-->
   </head>
+         {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+         <div class="alert alert-{{ category }}">
+          <div class="modal fade show" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-modal="true" style="display: block;">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-body">{{ message }}
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-secondary" href="/board_write">확인</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
 
   <body>
     <div class="container">
@@ -64,7 +84,7 @@
   <div class="content-section">
     <form method="POST" action="">
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4">{{ email }} 님. 글을 작성해주세요.</legend>
+            <legend class="border-bottom mb-4">{{ username }} 님. 글을 작성해주세요.</legend>
             <div class="form-group">
                 {{ form.title.label(class="form-control-label") }}
                 {% if form.title.errors %}

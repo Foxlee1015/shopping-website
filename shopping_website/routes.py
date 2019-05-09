@@ -53,6 +53,17 @@ def insert_data(email, username, password):
     c.close()
     conn.close()
 
+def insert_data_board(title, content, email):
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 저장
+    c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)",
+              (thwart(title), thwart(content), thwart(email)))
+    conn.commit()
+    c.close()
+    conn.close()
+
+
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -178,42 +189,28 @@ def logout():
 @app.route('/board_write', methods=["GET", "POST"])
 def board_page():
     try:
-        if session['logged_in'] != True:
-            return redirect(url_for('login'))
         form = BoardForm(request.form)
         email = session['email']                                  # 로그인 True 상태에서 email 정보 가져오고 하단 return email 정보 제공
+        info_list = check_loginfo(email)  # 해당 이메일의 정보 가져오기
+        username, password_db = info_list[0][1], info_list[0][2]
         if request.method == "POST" and form.validate():
             title = form.title.data
             content = form.content.data
-            c, conn = connection()
-            data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)]) # 이메일 존재하는지 먼저 확인
-            if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
-                flash('This email doesnt exist')
-                return render_template("login.html")
-            data1 = c.fetchone()[2]                                # 테이블에서 비밀번호 가져오기
-            if data != 0:                                          # data 해당 email이 존재하고
-                pass_data = form.password.data  # 암호화 필요
-                password = hashlib.sha256(pass_data.encode()).hexdigest()
-                if data1 == password:                              # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
-                    c.execute("set names utf8")  # db 한글 저장
-                    c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)", (thwart(title), thwart(content), thwart(email)))
-                    conn.commit()
-                    data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
-                    data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
-                    flash(data2 + "님 빠른 시일 내에 연락드리겠습니다.")
-                    c.close()
-                    conn.close()
-                    gc.collect()
-                    return redirect(url_for('home'))
-                if data1 != form.password.data:
-                    flash('Wrong password')
-                    return render_template("board_write.html", form=form)
+            pass_data = form.password.data
+            password_input = hashlib.sha256(pass_data.encode()).hexdigest()  # 입력된 비밀번호 암호화
+            if password_db == password_input:
+                insert_data_board(title, content, email)
+                flash(username + "님 빠른 시일 내에 연락드리겠습니다.")
+                gc.collect()
+                return render_template("home.html")
+
+            else:
+                flash('Wrong password')
+                return render_template("board_write.html", form=form)
         else:
-            #session['logged_in'] = True #email = session['email'] # email = session['email']  위에서 email 정보 얻음
-            return render_template("board_write.html", form=form, email=email)
-    except Exception as e:
-        #session['logged_in'] = True #email = session['email']  위에서 email 정보 얻음
-        return render_template("board_write.html", form=form, email=email)
+            return render_template("board_write.html", form=form, username=username)
+    except:
+        return redirect(url_for('login'))
 
 @app.route('/board', methods=["GET","POST"])
 def board_main():
@@ -234,8 +231,6 @@ def board_main():
 @app.route('/mypage', methods=["GET", "POST"])
 def my_page():
     try:
-        if session['logged_in'] != True:
-            return redirect(url_for('login'))
         form = LocationForm(request.form)
         email = session['email']          #로그인된 상태에서의 이메일 정보 가져와서 db에 아래 정보와 같이 저장
         if request.method == "POST" and form.validate():
@@ -275,8 +270,8 @@ def my_page():
             else:
                 location_data_all = ((""),(""),(""),(""),)   # data == 0 인 경우에는 db에 location data 가 없으므로 빈 행렬로 html 에 빈칸으로 출력
                 return render_template("mypage.html", form=form, location_data_all=location_data_all)
-    except Exception as e:
-        return render_template("mypage.html", form=form)
+    except:
+        return redirect(url_for('login'))
 
 @app.route('/register_product', methods=["GET", "POST"])                        #  << 실수, methods get, post 추가 안함 >>
 def register_product():
