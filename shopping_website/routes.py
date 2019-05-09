@@ -1,5 +1,6 @@
 import os
 import secrets
+import datetime
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm
@@ -16,6 +17,16 @@ from werkzeug.utils import secure_filename
 #layout list
 Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
+def check_loginfo(email):           #이메일 입력 -> 비밀번호 출력
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)])
+    if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
+        return None
+    else:
+        info_list = c.fetchall()
+        return info_list
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -28,27 +39,22 @@ def login():
             return redirect(url_for('home'))
     except:          # 세션에서 오류뜰때 except = 로그인 되지 않은 상태면 log 페이지로 이동
             form = LoginForm(request.form)
-            c, conn = connection()
             if request.method == "POST" and form.validate():
                 email = form.email.data
-                data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)])
-                if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
+                if check_loginfo(email) == None:
                     flash('This email doesnt exist')
                     return render_template("login.html")
-                data1 = c.fetchone()[2]  # 테이블에서 비밀번호 가져오기
-                c.execute("set names utf8")  # db에서 닉네임 가져오기 전(한글 닉네임)
-                data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
-                data2 = c.fetchone()[0] # 테이블에서 해당 이메일의 username 가져오기
-
-                if data != 0:   # data 해당 email이 존재하고
-                    pass_data = form.password.data  # 암호화 필요
-                    password = hashlib.sha256(pass_data.encode()).hexdigest()
-                    if data1 == password:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터악 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
+                else:
+                    info_list = check_loginfo(email)                             # 해당 이메일의 정보 가져오기
+                    username, password_db = info_list[0][1], info_list[0][2]
+                    pass_data = form.password.data
+                    password_input = hashlib.sha256(pass_data.encode()).hexdigest() # 입력된 비밀번호 암호화
+                    if password_db == password_input:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터악 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
                         session['logged_in'] = True
                         session['email'] = request.form['email']
-                        flash(data2 + "님 즐거운 쇼핑 되십시오. You are now logged in")
-                        return render_template("home.html", username=data2)
-                    if data1 != form.password.data:
+                        flash(username + "님 즐거운 쇼핑 되십시오. You are now logged in")
+                        return render_template("home.html", username=username)
+                    else:
                         flash('Wrong password')
                         return render_template("login.html", form=form) # error=error
             gc.collect()
