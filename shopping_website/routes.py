@@ -1,6 +1,7 @@
 import os
 import secrets
 import datetime
+from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm
@@ -281,6 +282,7 @@ def register_product():
         product_name = form.product_name.data
         product_intro = form.product_intro.data
         file = request.files['file']                  # post 된 파일 정보 가져옴
+
         if not file:                                  # 파일이 존재하지 않으면
             flash('no file')
             return render_template("register_product.html", form=form)
@@ -290,6 +292,9 @@ def register_product():
         else:
             filename = secure_filename(file.filename)
             filename =  random_hex + filename
+            output_size = (200,250)                 # 사이즈 조정 필요
+            file = Image.open(file)
+            file.thumbnail(output_size)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             c, conn = connection()
             c.execute("set names utf8")
@@ -340,3 +345,17 @@ def register_product():
         return render_template("board_write.html", form=form, email=email)
 
 """
+
+
+def check_product():           #이메일 입력 -> 비밀번호 출력
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM product_info")
+    product_list = c.fetchall()
+    return product_list
+
+@app.route("/product_list")
+def product_list():
+    product_list  = check_product()
+    n = len(product_list)
+    return render_template('product_list.html', p_list=product_list, n=n)
