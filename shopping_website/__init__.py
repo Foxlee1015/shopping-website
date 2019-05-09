@@ -3,15 +3,8 @@ from flask import Flask
 from flask_login import LoginManager
 from werkzeug.utils import secure_filename
 from flask_mail import Mail
-"""
-from flask_mail import Mail
-from dbconnect import connection
-from MySQLdb import escape_string as thwart
-import hashlib
-import gc
-from functools import wraps
-"""
-UPLOAD_FOLDER = 'shopping_website/static/images/'                             # 저장위치는 run.py 기준!
+
+UPLOAD_FOLDER = 'shopping_website/static/images/'                             # 사진 저장위치는 run.py 기준!
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -28,8 +21,5 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
 app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
 mail = Mail(app)
-
-
-
 
 from shopping_website import routes

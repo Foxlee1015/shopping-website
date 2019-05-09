@@ -63,8 +63,6 @@ def insert_data_board(title, content, email):
     c.close()
     conn.close()
 
-
-
 @app.route("/")
 @app.route("/home")
 def home():
@@ -282,7 +280,6 @@ def register_product():
         product_name = form.product_name.data
         product_intro = form.product_intro.data
         file = request.files['file']                  # post 된 파일 정보 가져옴
-
         if not file:                                  # 파일이 존재하지 않으면
             flash('no file')
             return render_template("register_product.html", form=form)
@@ -292,60 +289,20 @@ def register_product():
         else:
             filename = secure_filename(file.filename)
             filename =  random_hex + filename
-            output_size = (200,250)                 # 사이즈 조정 필요
-            file = Image.open(file)
-            file.thumbnail(output_size)
+            #사이즈 조절
+            #output_size = (200,250)
+            #file = Image.open(file)
+            #file.thumbnail(output_size)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             c, conn = connection()
             c.execute("set names utf8")
             c.execute("INSERT INTO product_info (product_name, product_intro, filename) VALUES (%s, %s, %s)", [thwart(product_name), thwart(product_intro), thwart(filename)])
             conn.commit()
-        return render_template("home.html", form=form)                                             #### DB에 저장해서 넘버와 파일이름 저장해서 같이 저장, 같이 불러오기
+            product_list = check_product()
+            n = len(product_list)
+            return render_template('product_list.html', p_list=product_list, n=n)   #### DB에 저장해서 넘버와 파일이름 저장해서 같이 저장, 같이 불러오기
     else:
         return render_template("register_product.html", form=form)
-
-        """
-
-        if session['logged_in'] != True:
-            return redirect(url_for('login'))
-        form = ProductForm(request.form)
-        email = session['email']                                  # 로그인 True 상태에서 email 정보 가져오고 하단 return email 정보 제공
-  
-            c, conn = connection()
-            data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)]) # 이메일 존재하는지 먼저 확인
-            if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
-                flash('This email doesnt exist')
-                return render_template("login.html")
-            data1 = c.fetchone()[2]  # 테이블에서 비밀번호 가져오기
-            #data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
-            #data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
-
-            if data != 0:  # data 해당 email이 존재하고
-                pass_data = form.password.data  # 암호화 필요
-                password = hashlib.sha256(pass_data.encode()).hexdigest()
-                if data1 == password:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터와 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
-                    c.execute("set names utf8")  # db 한글 저장
-                    c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)", (thwart(title), thwart(content), thwart(email)))
-                    conn.commit()
-                    data_user = c.execute("SELECT username FROM user_list WHERE email = (%s)", [thwart(email)])
-                    data2 = c.fetchone()[0]  # 테이블에서 해당 이메일의 username 가져오기
-                    flash(data2 + "님 빠른 시일 내에 연락드리겠습니다.")
-                    c.close()
-                    conn.close()
-                    gc.collect()
-                    return redirect(url_for('home'))
-                if data1 != form.password.data:
-                    flash('Wrong password')
-                    return render_template("board_write.html", form=form)
-        else:
-            #session['logged_in'] = True #email = session['email'] # email = session['email']  위에서 email 정보 얻음
-            return render_template("board_write.html", form=form, email=email)
-    except Exception as e:
-        #session['logged_in'] = True #email = session['email']  위에서 email 정보 얻음
-        return render_template("board_write.html", form=form, email=email)
-
-"""
-
 
 def check_product():           #이메일 입력 -> 비밀번호 출력
     c, conn = connection()
