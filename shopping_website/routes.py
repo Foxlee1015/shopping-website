@@ -63,6 +63,27 @@ def insert_data_board(title, content, email):
     c.close()
     conn.close()
 
+def check_product():
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM product_info")
+    product_list = c.fetchall()
+    return product_list
+
+@app.route("/product_list")
+def product_list():
+    product_list  = check_product()
+    n = len(product_list)
+    return render_template('product_list.html', p_list=product_list, n=n)
+
+def insert_data_product(product_name, product_intro, filename):
+    c, conn = connection()
+    c.execute("set names utf8")
+    c.execute("INSERT INTO product_info (product_name, product_intro, filename) VALUES (%s, %s, %s)", [thwart(product_name), thwart(product_intro), thwart(filename)])
+    conn.commit()
+    c.close()
+    conn.close()
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -294,25 +315,10 @@ def register_product():
             #file = Image.open(file)
             #file.thumbnail(output_size)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            c, conn = connection()
-            c.execute("set names utf8")
-            c.execute("INSERT INTO product_info (product_name, product_intro, filename) VALUES (%s, %s, %s)", [thwart(product_name), thwart(product_intro), thwart(filename)])
-            conn.commit()
-            product_list = check_product()
+            insert_data_product(product_name, product_intro, filename)             ## db에 저장
+            product_list = check_product()                                         ## db에 저장된 테이블 리스트로 가져옴([1]이름,[2]설명,[3]파일이름)
             n = len(product_list)
-            return render_template('product_list.html', p_list=product_list, n=n)   #### DB에 저장해서 넘버와 파일이름 저장해서 같이 저장, 같이 불러오기
+            return render_template('product_list.html', p_list=product_list, n=n)
     else:
         return render_template("register_product.html", form=form)
 
-def check_product():           #이메일 입력 -> 비밀번호 출력
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT * FROM product_info")
-    product_list = c.fetchall()
-    return product_list
-
-@app.route("/product_list")
-def product_list():
-    product_list  = check_product()
-    n = len(product_list)
-    return render_template('product_list.html', p_list=product_list, n=n)
