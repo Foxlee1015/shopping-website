@@ -27,11 +27,19 @@ def check_loginfo(email):           #이메일 입력 -> 비밀번호 출력
         info_list = c.fetchall()
         return info_list
 
+def check_username(username):           #이메일 입력 -> 비밀번호 출력
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM user_list WHERE username = (%s)", [thwart(username)])
+    if data == 0:  # c.execute 로부터 해당 username이 존재하지 않으면 data == 0
+        return None
+    else:
+        return True  # username 이 이미 존재.
+
 def insert_data(email, username, password):
     c, conn = connection()
     c.execute("set names utf8")  # db에 한글 저장
     c.execute("INSERT INTO user_list (username, password, email) VALUES (%s, %s, %s)", (thwart(username), thwart(password), thwart(email)))
-    print('성공')
     conn.commit()
     c.close()
     conn.close()
@@ -81,19 +89,12 @@ def register_page():
             email = form.email.data
             pass_data = form.password.data
             password = hashlib.sha256(pass_data.encode()).hexdigest()
-            c, conn = connection()
-
-            x = c.execute("SELECT * FROM user_list WHERE username = (%s)",
-                          [thwart(username)])
-            y = c.execute("SELECT * FROM user_list WHERE email = (%s)",
-                          [thwart(email)])
-            if int(x) > 0 :
-                flash("That username is already taken, please choose another")
-                return render_template('register_test.html', form=form)
-            if int(y) > 0:
+            if check_loginfo(email) != None:
                 flash("That email is already taken, please choose another")
                 return render_template('register_test.html', form=form)
-
+            if check_username(username) != None:
+                flash("That username is already taken, please choose another")
+                return render_template('register_test.html', form=form)
             else:
                 insert_data(email, username, password)
                 gc.collect()
@@ -102,7 +103,7 @@ def register_page():
                 session['email'] = form.email.data  #request.form['email']  # 처음 가입할때 기입한 이메일로 접속하도록 설정
                 return redirect(url_for('home'))
         else:
-            flash("다시 입력해주십시오. Type the info")
+            flash("Type the info")
         return render_template("register_test.html", form=form)
 
 @app.route("/reset/", methods=["GET", "POST"])
