@@ -5,6 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -17,66 +18,6 @@ from flask_mail import Message
 
 #layout list
 Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
-
-def send_reset_email(email):
-    #token = email.get_reset_token()
-    msg = Message('Password reset request', sender='noreply@foxlee-shop.com', recipients=[email])
-    msg.body = f''' To reset your pass, visit the following link:
-http://127.0.0.1:5000/reset_pass/
-If you did not make this request then simply ignore this email and no changes will be made.
-'''
-    mail.send(msg)
-
-def check_loginfo(email):           #이메일 입력 -> 비밀번호 출력
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)])
-    if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
-        return None
-    else:
-        info_list = c.fetchall()
-        return info_list
-
-def check_username(username):           #이메일 입력 -> 비밀번호 출력
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT * FROM user_list WHERE username = (%s)", [thwart(username)])
-    if data == 0:  # c.execute 로부터 해당 username이 존재하지 않으면 data == 0
-        return None
-    else:
-        return True  # username 이 이미 존재.
-
-def insert_data(email, username, password):
-    c, conn = connection()
-    c.execute("set names utf8")  # db에 한글 저장
-    c.execute("INSERT INTO user_list (username, password, email) VALUES (%s, %s, %s)", (thwart(username), thwart(password), thwart(email)))
-    conn.commit()
-    c.close()
-    conn.close()
-
-def insert_data_board(title, content, email):
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 저장
-    c.execute("INSERT INTO board (title, content, email) VALUES (%s, %s, %s)",
-              (thwart(title), thwart(content), thwart(email)))
-    conn.commit()
-    c.close()
-    conn.close()
-
-def check_product():
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT * FROM product_info")
-    product_list = c.fetchall()
-    return product_list
-
-def insert_data_product(product_name, product_intro, filename):
-    c, conn = connection()
-    c.execute("set names utf8")
-    c.execute("INSERT INTO product_info (product_name, product_intro, filename) VALUES (%s, %s, %s)", [thwart(product_name), thwart(product_intro), thwart(filename)])
-    conn.commit()
-    c.close()
-    conn.close()
 
 @app.route("/")
 @app.route("/home")
