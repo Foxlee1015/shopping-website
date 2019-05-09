@@ -27,6 +27,15 @@ def check_loginfo(email):           #이메일 입력 -> 비밀번호 출력
         info_list = c.fetchall()
         return info_list
 
+def insert_data(email, username, password):
+    c, conn = connection()
+    c.execute("set names utf8")  # db에 한글 저장
+    c.execute("INSERT INTO user_list (username, password, email) VALUES (%s, %s, %s)", (thwart(username), thwart(password), thwart(email)))
+    print('성공')
+    conn.commit()
+    c.close()
+    conn.close()
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -43,7 +52,7 @@ def login():
                 email = form.email.data
                 if check_loginfo(email) == None:
                     flash('This email doesnt exist')
-                    return render_template("login.html")
+                    return render_template("login.html", form=form)
                 else:
                     info_list = check_loginfo(email)                             # 해당 이메일의 정보 가져오기
                     username, password_db = info_list[0][1], info_list[0][2]
@@ -70,7 +79,7 @@ def register_page():
         if request.method == "POST" and form.validate():
             username = form.username.data
             email = form.email.data
-            pass_data = form.password.data  #암호화 필요
+            pass_data = form.password.data
             password = hashlib.sha256(pass_data.encode()).hexdigest()
             c, conn = connection()
 
@@ -86,14 +95,9 @@ def register_page():
                 return render_template('register_test.html', form=form)
 
             else:
-                c.execute("set names utf8") # db에 한글 저장
-                c.execute("INSERT INTO user_list (username, password, email) VALUES (%s, %s, %s)", (thwart(username), thwart(password), thwart(email)))
-                conn.commit()
-                flash("Thanks for registering!")
-                c.close()
-                conn.close()
+                insert_data(email, username, password)
                 gc.collect()
-
+                flash("Thanks for registering!")
                 session['logged_in'] = True
                 session['email'] = form.email.data  #request.form['email']  # 처음 가입할때 기입한 이메일로 접속하도록 설정
                 return redirect(url_for('home'))
