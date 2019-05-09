@@ -70,12 +70,6 @@ def check_product():
     product_list = c.fetchall()
     return product_list
 
-@app.route("/product_list")
-def product_list():
-    product_list  = check_product()
-    n = len(product_list)
-    return render_template('product_list.html', p_list=product_list, n=n)
-
 def insert_data_product(product_name, product_intro, filename):
     c, conn = connection()
     c.execute("set names utf8")
@@ -322,3 +316,8 @@ def register_product():
     else:
         return render_template("register_product.html", form=form)
 
+@app.route("/product_list")
+def product_list():
+    product_list  = check_product()
+    n = len(product_list)
+    return render_template('product_list.html', p_list=product_list, n=n)
