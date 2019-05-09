@@ -2,7 +2,7 @@ import os
 import secrets
 import datetime
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
-from shopping_website import app
+from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
@@ -12,10 +12,19 @@ import hashlib
 import gc
 from functools import wraps
 from werkzeug.utils import secure_filename
-#from flask_mail import Mail
+from flask_mail import Message
 
 #layout list
 Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
+
+def send_reset_email(email):
+    #token = email.get_reset_token()
+    msg = Message('Password reset request', sender='noreply@foxlee-shop.com', recipients=[email])
+    msg.body = f''' To reset your pass, visit the following link:
+http://127.0.0.1:5000/reset_pass/
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    mail.send(msg)
 
 def check_loginfo(email):           #이메일 입력 -> 비밀번호 출력
     c, conn = connection()
@@ -111,16 +120,15 @@ def reset():
     #if session['logged_in'] == True:       # 로그인 상태에서는 홈으로
     #    return redirect(url_for('home'))
     form = RequestResetForm(request.form)
-    c, conn = connection()
     if request.method == "POST":
         email = form.email.data
-        data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)])
-        if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
+        if check_loginfo(email) == None:
             flash('This email doesnt exist')
             return render_template("reset.html", form=form)
         else:
+            send_reset_email(email)
             flash('Please check your email')                               # 메일보내기 필요 //
-            return render_template("reset_pass.html")
+            return render_template("home.html")
     else: # POST 가 아닌 GET 인 경우 reset 페이지로 가서 email 넣고 post
         return render_template("reset.html")
 
@@ -129,7 +137,6 @@ def reset_pass():
     #if session['logged_in'] == True:       # 로그인 상태에서는 홈으로
     #    return redirect(url_for('home'))
     form = ResetPasswordForm(request.form)
-    c, conn = connection()
     if request.method == "POST":
         email = form.email.data
         password = form.password.data
@@ -137,12 +144,12 @@ def reset_pass():
         if password != confirm:
             flash('Check your password')
             return render_template("reset_pass.html", form=form)
-        data = c.execute("SELECT * FROM user_list WHERE email = (%s)", [thwart(email)])
-        if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
+        if check_loginfo(email) == None:
             flash('This email doesnt exist')
             return render_template("reset_pass.html", form=form)
-
         else:
+            password = hashlib.sha256(password.encode()).hexdigest()
+            c, conn = connection()
             change_pass = c.execute("UPDATE user_list SET password = (%s) WHERE email = (%s)", [thwart(password), thwart(email)])
             conn.commit()  # 업데이트한 후 반드시 필요!
             flash('Success')
