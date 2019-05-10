@@ -4,8 +4,8 @@ import datetime
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
-from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm
-from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product
+from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -15,6 +15,7 @@ import gc
 from functools import wraps
 from werkzeug.utils import secure_filename
 from flask_mail import Message
+import requests
 
 #layout list
 Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
@@ -22,7 +23,15 @@ Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품"
 @app.route("/")
 @app.route("/home")
 def home():
-        return render_template('home.html')
+    product_list = check_product()
+    n = len(product_list)
+    """
+    if request.method == "POST":
+        form = LikesForm(request.form)
+        y = form.product_name.data
+        print(y)
+    """
+    return render_template('home.html', p_list=product_list, n=n)
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -45,7 +54,9 @@ def login():
                         session['logged_in'] = True
                         session['email'] = request.form['email']
                         flash(username + "님 즐거운 쇼핑 되십시오. You are now logged in")
-                        return render_template("home.html", username=username)
+                        product_list = check_product()
+                        n = len(product_list)
+                        return render_template("home.html", username=username, p_list=product_list, n=n)
                     else:
                         flash('Wrong password')
                         return render_template("login.html", form=form) # error=error
@@ -257,8 +268,56 @@ def register_product():
     else:
         return render_template("register_product.html", form=form)
 
-@app.route("/product_list")
+@app.route("/product_list", methods=["GET", "POST"])
 def product_list():
-    product_list  = check_product()
+    product_list = check_product()
     n = len(product_list)
+    if request.method == "POST" :
+        form = LikesForm(request.form)
+        y = form.product_name.data
+        print(y)
     return render_template('product_list.html', p_list=product_list, n=n)
+
+@app.route("/wish_list",  methods=["GET", "POST"] )
+def wish_list():
+    print('x')
+    form = LikesForm(request.form)
+    y = form.product_name.data
+    print(y)
+    # db join 해서 보여주기
+    return render_template('wishlist.html')
+
+@app.route("/product_details/<int:product_n>", methods=["GET", "POST"])              # 질문? layout 에서 자세히를 누를때 상품 번호가 주소에 포함되고 그 상품번호가 <int:product_n> 에 들어가짐
+@login_required
+def product_details(product_n):
+    form =LikesForm(request.form)
+    email = session['email']
+    product_list = check_product()
+    n = product_n - 2                               # 현재 상품 번호와 db에 순서 불일치
+    if request.method == "POST":
+        product_n = str(product_n)
+        likes_list = check_likesinfo(email)
+        if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
+            c, conn = connection()
+            c.execute("set names utf8")  # db에 한글 저장
+            c.execute("UPDATE user_list SET likes=%s WHERE email=%s", (thwart(product_n), thwart(email)))
+            conn.commit()
+            c.close()
+            conn.close()
+            return render_template('wishlist.html')
+        elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
+            return render_template('product_list.html', n=n, p_list=product_list)
+        else:                                                     # 이미 있고 추가로 되는 경우우
+            old_list = likes_list[0][0]
+            new_list = likes_list[0][0] + "," + product_n
+            c, conn = connection()
+            c.execute("set names utf8")  # db에 한글 저장
+            c.execute("UPDATE user_list SET likes=%s WHERE email=%s", (thwart(new_list), thwart(email)))
+            conn.commit()
+            c.close()
+            conn.close()
+            return render_template('wishlist.html')
+    else:
+        return render_template('product_list.html', n=n, p_list=product_list)
+
+# 좋아요 기능

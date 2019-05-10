@@ -43,3 +43,6 @@ class ProductForm(Form):
     product_intro = TextAreaField('Product Intro', [validators.Length(min=10, max=50)])
     product_pic = FileField('Product picture', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
     submit = SubmitField('okay')
+
+class LikesForm(Form):
+    submit = SubmitField('장바구니')

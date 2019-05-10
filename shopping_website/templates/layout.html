@@ -134,94 +134,26 @@
   </div>
   <a href="/product_list">Product list</a>
   <div class="row mb-2"> <!--상품 포스트 container 시작-->
+    {% for i in range(n) %}
     <div class="col-md-6"> <!--상품 포스트 1 시작-->
       <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
         <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary">여성패션</strong>
-          <h3 class="mb-0">상품 이름</h3>
+          <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}</strong>
+          <h3 class="mb-0"></h3>
           <div class="mb-1 text-muted">등록 날짜: </div>
-          <p class="card-text mb-auto">상품 소개:</p>
-          <a href="#" class="stretched-link">상품 소개 링크:</a>
+          <p class="card-text mb-auto">상품 소개: {{ p_list[i][2] }}</p>
+          <p></p>
+          <!--<a class="btn btn-sm btn-outline-secondary" type="submit" href="/product_list">장바구니</a>-->
+          <p></p>
+          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">자세히</a>
         </div>
         <div class="col-auto d-none d-lg-block">
-          <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>
+          <!--<svg class="bd-placeholder-img" width="200" height="250"  src="../static/images/1.jpg"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>-->
+          <image width="200" height="250" src="../static/images/{{ p_list[i][3] }}"></image>
         </div>
       </div>
     </div> <!--상품 포스트 1 끝-->
-
-    <div class="col-md-6">
-      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary">남성패션</strong>
-          <h3 class="mb-0">상품 이름</h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
-          <p class="card-text mb-auto">상품 소개:</p>
-          <a href="#" class="stretched-link">상품 소개 링크:</a>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-          <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary">뷰티</strong>
-          <h3 class="mb-0">상품 이름</h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
-          <p class="card-text mb-auto">상품 소개:</p>
-          <a href="#" class="stretched-link">상품 소개 링크:</a>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-          <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary">식품</strong>
-          <h3 class="mb-0">상품 이름</h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
-          <p class="card-text mb-auto">상품 소개:</p>
-          <a href="#" class="stretched-link">상품 소개 링크:</a>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-          <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary">주방용품</strong>
-          <h3 class="mb-0">상품 이름</h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
-          <p class="card-text mb-auto">상품 소개:</p>
-          <a href="#" class="stretched-link">상품 소개 링크:</a>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-          <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary">생활용품</strong>
-          <h3 class="mb-0">상품 이름</h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
-          <p class="card-text mb-auto">상품 소개:</p>
-          <a href="#" class="stretched-link">상품 소개 링크:</a>
-        </div>
-        <div class="col-auto d-none d-lg-block">
-          <svg class="bd-placeholder-img" width="200" height="250" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>
-        </div>
-      </div>
-    </div>
+    {% endfor %}
 
   </div> <!--상품 포스트 container 끝끝-->
 

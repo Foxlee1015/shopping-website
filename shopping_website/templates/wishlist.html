@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Location</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main3.css') }}">
+</head>
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+    <!-- Custom styles for this template -->
+    <!--<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">-->
+    <!-- Custom styles for this template -->
+    <!--<link href="blog.css" rel="stylesheet">-->
+  </head>
+  <body>
+<div class="container">
+  <div class="renewal-header gnb-api">
+  <header class="blog-header py-3">
+    <div class="row flex-nowrap justify-content-between align-items-center">
+      <div class="col-4 pt-1">
+        <a class="text-muted" href="/">Home</a>
+      </div>
+      <div class="col-4 text-center">
+        <a class="blog-header-logo text-dark" href="/">Foxlee-shop</a>
+      </div>
+      <div class="col-4 d-flex justify-content-end align-items-center">
+        <a class="text-muted" href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="mx-3" role="img" viewBox="0 0 24 24" focusable="false"><title>Search</title><circle cx="10.5" cy="10.5" r="7.5"/><path d="M21 21l-5.2-5.2"/></svg>
+        </a>
+        <a class="btn btn-sm btn-outline-secondary mr-4" href="/mypage">My page</a>
+        <a class="btn btn-sm btn-outline-secondary mr-4" href="/logout">Log out</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/board">Q & A</a>
+
+
+      </div>
+    </div>
+  </header>
+  </div>
+    <form method="POST" action="">
+        <fieldset class="form-group">
+           <legend class="border-bottom mb-4">장바구니 리스트. </legend>
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>상품 이름</th>
+                  <th>상품 소개</th>
+                  <th>희망 수량</th>
+                  <th>링크</th>
+                </tr>
+              </thead>
+            <tbody>
+            <tr>
+              <td>1,001</td>
+              <td>Lorem</td>
+              <td>ipsum</td>
+              <td>dolor</td>
+              <td>sit</td>
+            </tr>
+            </tbody>
+            </table>
+        </fieldset>
+    </form>
+</div>
+</body>
+</html>

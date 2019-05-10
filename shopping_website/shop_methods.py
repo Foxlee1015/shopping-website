@@ -1,20 +1,7 @@
-import os
-import secrets
-import datetime
-from PIL import Image
-from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
-from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm
-from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
-from flask_login import login_user, current_user, logout_user, login_required, LoginManager
-import hashlib
-import gc
-from functools import wraps
-from werkzeug.utils import secure_filename
 from flask_mail import Message
-
 
 def send_reset_email(email):
     #token = email.get_reset_token()
@@ -75,3 +62,13 @@ def insert_data_product(product_name, product_intro, filename):
     conn.commit()
     c.close()
     conn.close()
+
+def check_likesinfo(email):           #이메일 입력 -> 비밀번호 출력
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT likes FROM user_list WHERE email = (%s)", [thwart(email)])
+    likes_list = c.fetchall()
+    if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
+        return None
+    else:
+        return likes_list
