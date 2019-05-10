@@ -288,15 +288,17 @@ def product_details(product_n):
         likes_list = check_likesinfo(email)
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
             update_likes_product(product_n, email)
+            product_list = check_product()                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
+            n = len(product_list)
             return render_template('home.html', n=n, p_list=product_list)
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
             return render_template('product_list.html', n=numbers, p_list=product_list)
-        else:                                                     # 이미 있고 추가로 되는 경우우
+        else:                                                     # 이미 있고 추가로 되는 경우
             old_list = likes_list[0][0]
             new_list = likes_list[0][0] + "," + product_n
             update_1st_like(new_list, email)
+            product_list = check_product()                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
+            n = len(product_list)
             return render_template('home.html', n=n, p_list=product_list)
     else:
         return render_template('product_list.html', n=numbers, p_list=product_list)
-
-# 좋아요 기능
