@@ -5,7 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm
-from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -46,7 +46,7 @@ def login():
                     if password_db == password_input:  # 테이블에서 가져온 비번과 loginform의 비밀번호의 데이터악 일치하면   암호화 필요! sha256_crypt.verify(form.password, data):
                         session['logged_in'] = True
                         session['email'] = request.form['email']
-                        flash(username + "님 즐거운 쇼핑 되십시오. You are now logged in")
+                        flash(username + "님 즐거운 쇼핑 되십시오.")
                         product_list = check_product()
                         n = len(product_list)
                         return render_template("home.html", username=username, p_list=product_list, n=n)
@@ -64,9 +64,7 @@ def register_page():
     except:
         form = RegistrationForm(request.form)
         if request.method == "POST" and form.validate():
-            username = form.username.data
-            email = form.email.data
-            pass_data = form.password.data
+            username, email, pass_data = form.username.data, form.email.data, form.password.data
             password = hashlib.sha256(pass_data.encode()).hexdigest()
             if check_loginfo(email) != None:
                 flash("That email is already taken, please choose another")
@@ -87,45 +85,49 @@ def register_page():
 
 @app.route("/reset/", methods=["GET", "POST"])
 def reset():
-    #if session['logged_in'] == True:       # 로그인 상태에서는 홈으로
-    #    return redirect(url_for('home'))
-    form = RequestResetForm(request.form)
-    if request.method == "POST":
-        email = form.email.data
-        if check_loginfo(email) == None:
-            flash('This email doesnt exist')
-            return render_template("reset.html", form=form)
-        else:
-            send_reset_email(email)
-            flash('Please check your email')                               # 메일보내기 필요 //
-            return render_template("home.html")
-    else: # POST 가 아닌 GET 인 경우 reset 페이지로 가서 email 넣고 post
-        return render_template("reset.html")
+    try:
+        if session['logged_in'] == True:       # 로그인 상태에서는 홈으로
+            return redirect(url_for('home'))
+    except:                                      # 로그아웃상태에서 try / excpet 없이 접근 시 에러 logged_in
+        form = RequestResetForm(request.form)
+        if request.method == "POST":
+            email = form.email.data
+            if check_loginfo(email) == None:
+                flash('This email doesnt exist')
+                return render_template("reset.html", form=form)
+            else:
+                send_reset_email(email)
+                flash('Please check your email')
+                return render_template("home.html")
+        else:                                                          # POST 가 아닌 GET 인 경우 reset 페이지로 이동 email 입력 후 submit 하면 post
+            return render_template("reset.html")
 
 @app.route("/reset_pass/", methods=["GET", "POST"])
 def reset_pass():
-    #if session['logged_in'] == True:       # 로그인 상태에서는 홈으로
-    #    return redirect(url_for('home'))
-    form = ResetPasswordForm(request.form)
-    if request.method == "POST":
-        email = form.email.data
-        password = form.password.data
-        confirm = form.confirm.data
-        if password != confirm:
-            flash('Check your password')
-            return render_template("reset_pass.html", form=form)
-        if check_loginfo(email) == None:
-            flash('This email doesnt exist')
-            return render_template("reset_pass.html", form=form)
-        else:
-            password = hashlib.sha256(password.encode()).hexdigest()
-            c, conn = connection()
-            change_pass = c.execute("UPDATE user_list SET password = (%s) WHERE email = (%s)", [thwart(password), thwart(email)])
-            conn.commit()  # 업데이트한 후 반드시 필요!
-            flash('Success')
-            return redirect(url_for('login'))  # 비번 바꾼후 login 으로 이동
-    else: # POST 가 아닌 GET 인 경우 reset 페이지로 가서 email 넣고 post
-        return render_template("reset_pass.html")
+    try:
+        if session['logged_in'] == True:       # 로그인 상태에서는 홈으로
+            return redirect(url_for('home'))
+    except:
+        form = ResetPasswordForm(request.form)
+        if request.method == "POST":
+            email = form.email.data
+            password = form.password.data
+            confirm = form.confirm.data
+            if password != confirm:
+                flash('Check your password')
+                return render_template("reset_pass.html", form=form)
+            if check_loginfo(email) == None:
+                flash('This email doesnt exist')
+                return render_template("reset_pass.html", form=form)
+            else:
+                password = hashlib.sha256(password.encode()).hexdigest()
+                c, conn = connection()
+                change_pass = c.execute("UPDATE user_list SET password = (%s) WHERE email = (%s)", [thwart(password), thwart(email)])
+                conn.commit()  # 업데이트한 후 반드시 필요!
+                flash('Success')
+                return redirect(url_for('login'))  # 비번 바꾼후 login 으로 이동
+        else: # POST 가 아닌 GET 인 경우 reset 페이지로 가서 email 넣고 post
+            return render_template("reset_pass.html")
 
 def login_required(f):
     @wraps(f)
@@ -149,20 +151,17 @@ def logout():
 def board_page():
     try:
         form = BoardForm(request.form)
-        email = session['email']                                  # 로그인 True 상태에서 email 정보 가져오고 하단 return email 정보 제공
+        email = session['email']                                        # 로그인 True 상태에서 email 정보 가져오고 하단 return email 정보 제공  = email 정보 못 가져오면 에러 발생 -> login 페이지로 이동(except)
         info_list = check_loginfo(email)  # 해당 이메일의 정보 가져오기
         username, password_db = info_list[0][1], info_list[0][2]
         if request.method == "POST" and form.validate():
-            title = form.title.data
-            content = form.content.data
-            pass_data = form.password.data
+            title, content, pass_data = form.title.data, form.content.data, form.password.data
             password_input = hashlib.sha256(pass_data.encode()).hexdigest()  # 입력된 비밀번호 암호화
             if password_db == password_input:
                 insert_data_board(title, content, email)
                 flash(username + "님 빠른 시일 내에 연락드리겠습니다.")
                 gc.collect()
                 return render_template("home.html")
-
             else:
                 flash('Wrong password')
                 return render_template("board_write.html", form=form)
@@ -193,36 +192,24 @@ def my_page():
         form = LocationForm(request.form)
         email = session['email']          #로그인된 상태에서의 이메일 정보 가져와서 db에 아래 정보와 같이 저장
         if request.method == "POST" and form.validate():
-            address = form.address.data
-            zipcode = form.zipcode.data
-            phonenumber = form.phonenumber.data
+            address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
             c, conn = connection()
             data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
             if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
-                c, conn = connection()
-                c.execute("set names utf8") # 배송 정보 한글 저장.
-                c.execute("UPDATE user_location SET address=(%s), zipcode=(%s), phonenumber=(%s)  WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(phonenumber), thwart(email)])             # phonenumber 업데이트 실패  -> 컬럼 특성이 int라서?
-                conn.commit()
+                update_location(address, zipcode, phonenumber, email)
                 flash("배송지 업데이트에 성공했습니다.")
-                c.close()
                 gc.collect()
                 return render_template("home.html", form=form)                  # 새로 입력되는 주소로 업데이트 되고 홈으로 돌아감
             else: #data == 0:           # 기존 배송 데이터가 없으면 INSERT
-                c, conn = connection()
-                c.execute("set names utf8") # 배송 정보 한글 저장.
-                c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", [thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)])      # 리스트 아닐 시 정보 삽압 실패
-                conn.commit()
+                insert_location(email, address, zipcode, phonenumber)
                 flash(" 소중한 정보 감사합니다.")
-                c.close()
                 gc.collect()
                 return render_template("home.html", form=form)       # 데이터 입력하고 홈으로 돌아감
         else:                                                        # 로그인된 상태에서 email 정보 가져오고, 이 메일을 기반으로 저장된 데이터를 가져와서 기존의 데이터를 빈칸에 넣는다.
             c, conn = connection()
             data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
             if data != 0:
-                c.execute("set names utf8")
-                location_data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
-                location_data_all = c.fetchall()
+                location_data_all = show_current_location(email)
                 return render_template("mypage.html", form=form, location_data_all=location_data_all)
             else:
                 location_data_all = ((""),(""),(""),(""),)   # data == 0 인 경우에는 db에 location data 가 없으므로 빈 행렬로 html 에 빈칸으로 출력
@@ -259,14 +246,17 @@ def register_product():
     else:
         return render_template("register_product.html", form=form)
 
+"""
 @app.route("/product_list", methods=["GET", "POST"])
 def product_list():
     product_list = check_product()
+    print(product_list)
     n = len(product_list)
     if request.method == "POST" :
         form = LikesForm(request.form)
         y = form.product_name.data
     return render_template('product_list.html', p_list=product_list, n=n)
+"""
 
 @app.route("/wish_list",  methods=["GET", "POST"] )
 @login_required
@@ -293,24 +283,14 @@ def product_details(product_n):
         product_n = str(product_n)
         likes_list = check_likesinfo(email)
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
-            c, conn = connection()
-            c.execute("set names utf8")  # db에 한글 저장
-            c.execute("UPDATE user_list SET likes=%s WHERE email=%s", (thwart(product_n), thwart(email)))
-            conn.commit()
-            c.close()
-            conn.close()
+            update_likes_product(product_n, email)
             return render_template('home.html', n=n, p_list=product_list)
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
             return render_template('product_list.html', n=numbers, p_list=product_list)
         else:                                                     # 이미 있고 추가로 되는 경우우
             old_list = likes_list[0][0]
             new_list = likes_list[0][0] + "," + product_n
-            c, conn = connection()
-            c.execute("set names utf8")  # db에 한글 저장
-            c.execute("UPDATE user_list SET likes=%s WHERE email=%s", (thwart(new_list), thwart(email)))
-            conn.commit()
-            c.close()
-            conn.close()
+            update_1st_like(new_list, email)
             return render_template('home.html', n=n, p_list=product_list)
     else:
         return render_template('product_list.html', n=numbers, p_list=product_list)
