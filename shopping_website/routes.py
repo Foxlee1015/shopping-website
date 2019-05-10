@@ -15,7 +15,6 @@ import gc
 from functools import wraps
 from werkzeug.utils import secure_filename
 from flask_mail import Message
-import requests
 
 #layout list
 Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
@@ -203,12 +202,13 @@ def my_page():
             address = form.address.data
             zipcode = form.zipcode.data
             phonenumber = form.phonenumber.data
+            print('a')
             c, conn = connection()
             data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
             if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
+                print('b')
                 c, conn = connection()
                 c.execute("set names utf8") # 배송 정보 한글 저장.
-                print(phonenumber)
                 c.execute("UPDATE user_location SET address=(%s), zipcode=(%s), phonenumber=(%s)  WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(phonenumber), thwart(email)])             # phonenumber 업데이트 실패  -> 컬럼 특성이 int라서?
                 conn.commit()
                 flash("배송지 업데이트에 성공했습니다.")
@@ -217,9 +217,10 @@ def my_page():
                 return render_template("home.html", form=form)                  # 새로 입력되는 주소로 업데이트 되고 홈으로 돌아감
 
             else: #data == 0:           # 기존 배송 데이터가 없으면 INSERT
+                print('c')
                 c, conn = connection()
                 c.execute("set names utf8") # 배송 정보 한글 저장.
-                c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber))
+                c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", [thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)])      # 리스트 아닐 시 정보 삽압 실패
                 conn.commit()
                 flash(" 소중한 정보 감사합니다.")
                 c.close()
@@ -264,7 +265,7 @@ def register_product():
             insert_data_product(product_name, product_intro, filename)             ## db에 저장
             product_list = check_product()                                         ## db에 저장된 테이블 리스트로 가져옴([1]이름,[2]설명,[3]파일이름)
             n = len(product_list)
-            return render_template('product_list.html', p_list=product_list, n=n)
+            return render_template('home.html', p_list=product_list, n=n)
     else:
         return render_template("register_product.html", form=form)
 
@@ -280,11 +281,7 @@ def product_list():
 
 @app.route("/wish_list",  methods=["GET", "POST"] )
 def wish_list():
-    print('x')
-    form = LikesForm(request.form)
-    y = form.product_name.data
-    print(y)
-    # db join 해서 보여주기
+    # db 좋아요 상품 번호 가져와서 보여주기
     return render_template('wishlist.html')
 
 @app.route("/product_details/<int:product_n>", methods=["GET", "POST"])              # 질문? layout 에서 자세히를 누를때 상품 번호가 주소에 포함되고 그 상품번호가 <int:product_n> 에 들어가짐
