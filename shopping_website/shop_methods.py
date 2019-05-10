@@ -72,3 +72,10 @@ def check_likesinfo(email):           #이메일 입력 -> 비밀번호 출력
         return None
     else:
         return likes_list
+
+def get_product_info(product_n):
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM product_info WHERE product_n = (%s)", [thwart(product_n)])
+    product_list = c.fetchall()
+    return product_list

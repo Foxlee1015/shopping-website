@@ -52,26 +52,27 @@
   </header>
   </div>
     <form method="POST" action="">
+
         <fieldset class="form-group">
            <legend class="border-bottom mb-4">장바구니 리스트. </legend>
             <table class="table table-striped table-sm">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>상품 번호</th>
                   <th>상품 이름</th>
                   <th>상품 소개</th>
-                  <th>희망 수량</th>
                   <th>링크</th>
                 </tr>
               </thead>
             <tbody>
+            {% for i in range(n) %}
             <tr>
-              <td>1,001</td>
-              <td>Lorem</td>
-              <td>ipsum</td>
-              <td>dolor</td>
-              <td>sit</td>
+              <td>{{ wish_list_products[i][0][0] }}</td>
+              <td>{{ wish_list_products[i][0][1] }}</td>
+              <td>{{ wish_list_products[i][0][2] }}</td>
+              <td>____링크____</td>
             </tr>
+            {% endfor %}
             </tbody>
             </table>
         </fieldset>

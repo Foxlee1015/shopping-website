@@ -5,7 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm
-from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -24,12 +24,6 @@ Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품"
 def home():
     product_list = check_product()
     n = len(product_list)
-    """
-    if request.method == "POST":
-        form = LikesForm(request.form)
-        y = form.product_name.data
-        print(y)
-    """
     return render_template('home.html', p_list=product_list, n=n)
 
 @app.route('/login/', methods=["GET", "POST"])
@@ -202,11 +196,9 @@ def my_page():
             address = form.address.data
             zipcode = form.zipcode.data
             phonenumber = form.phonenumber.data
-            print('a')
             c, conn = connection()
             data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
             if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
-                print('b')
                 c, conn = connection()
                 c.execute("set names utf8") # 배송 정보 한글 저장.
                 c.execute("UPDATE user_location SET address=(%s), zipcode=(%s), phonenumber=(%s)  WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(phonenumber), thwart(email)])             # phonenumber 업데이트 실패  -> 컬럼 특성이 int라서?
@@ -215,9 +207,7 @@ def my_page():
                 c.close()
                 gc.collect()
                 return render_template("home.html", form=form)                  # 새로 입력되는 주소로 업데이트 되고 홈으로 돌아감
-
             else: #data == 0:           # 기존 배송 데이터가 없으면 INSERT
-                print('c')
                 c, conn = connection()
                 c.execute("set names utf8") # 배송 정보 한글 저장.
                 c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", [thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)])      # 리스트 아닐 시 정보 삽압 실패
@@ -276,13 +266,20 @@ def product_list():
     if request.method == "POST" :
         form = LikesForm(request.form)
         y = form.product_name.data
-        print(y)
     return render_template('product_list.html', p_list=product_list, n=n)
 
 @app.route("/wish_list",  methods=["GET", "POST"] )
+@login_required
 def wish_list():
-    # db 좋아요 상품 번호 가져와서 보여주기
-    return render_template('wishlist.html')
+    email = session['email']                                                                # 로그인 상태 이메일 가져오기
+    likes_list = check_likesinfo(email)                                                     # 이메일에 저장된 likes 상품 번호 가져오기
+    product_numbers = likes_list[0][0]                                                      # 2,7  (상품번호, 상품번호) 형식에서
+    likes_product_number = product_numbers.split(',')                                       # ['2', '7'] 로 변환
+    n = len(likes_product_number)                                                           #
+    wish_list_products = []
+    for i in range(n):                                                                      # likes 갯수 만큼 loop
+        wish_list_products.append(get_product_info(likes_product_number[i]))                # 리스트에 튜플(get_product_info(상품번호))저장
+    return render_template('wishlist.html', n=n, wish_list_products=wish_list_products)
 
 @app.route("/product_details/<int:product_n>", methods=["GET", "POST"])              # 질문? layout 에서 자세히를 누를때 상품 번호가 주소에 포함되고 그 상품번호가 <int:product_n> 에 들어가짐
 @login_required
@@ -290,7 +287,8 @@ def product_details(product_n):
     form =LikesForm(request.form)
     email = session['email']
     product_list = check_product()
-    n = product_n - 2                               # 현재 상품 번호와 db에 순서 불일치
+    n= len(product_list)
+    numbers = product_n - 2                               # 현재 상품 번호와 db에 순서 불일치
     if request.method == "POST":
         product_n = str(product_n)
         likes_list = check_likesinfo(email)
@@ -301,9 +299,9 @@ def product_details(product_n):
             conn.commit()
             c.close()
             conn.close()
-            return render_template('wishlist.html')
+            return render_template('home.html', n=n, p_list=product_list)
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
-            return render_template('product_list.html', n=n, p_list=product_list)
+            return render_template('product_list.html', n=numbers, p_list=product_list)
         else:                                                     # 이미 있고 추가로 되는 경우우
             old_list = likes_list[0][0]
             new_list = likes_list[0][0] + "," + product_n
@@ -313,8 +311,8 @@ def product_details(product_n):
             conn.commit()
             c.close()
             conn.close()
-            return render_template('wishlist.html')
+            return render_template('home.html', n=n, p_list=product_list)
     else:
-        return render_template('product_list.html', n=n, p_list=product_list)
+        return render_template('product_list.html', n=numbers, p_list=product_list)
 
 # 좋아요 기능
