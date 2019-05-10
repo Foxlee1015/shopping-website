@@ -246,18 +246,6 @@ def register_product():
     else:
         return render_template("register_product.html", form=form)
 
-"""
-@app.route("/product_list", methods=["GET", "POST"])
-def product_list():
-    product_list = check_product()
-    print(product_list)
-    n = len(product_list)
-    if request.method == "POST" :
-        form = LikesForm(request.form)
-        y = form.product_name.data
-    return render_template('product_list.html', p_list=product_list, n=n)
-"""
-
 @app.route("/wish_list",  methods=["GET", "POST"] )
 @login_required
 def wish_list():
@@ -280,7 +268,23 @@ def product_details(product_n):
     n= len(product_list)
     numbers = product_n - 2                               # 현재 상품 번호와 db에 순서 불일치
     if request.method == "POST":
+        info_list = check_loginfo(email)
+        uid = str(info_list[0][0])
         product_n = str(product_n)
+        c, conn = connection()
+        c.execute("set names utf8")  # db에 한글 저장
+        c.execute("UPDATE product_info SET likes=%s WHERE product_n=%s", [thwart(uid), thwart(product_n)])
+        conn.commit()
+        c.close()
+        conn.close()
+        """
+        # 수정 및 추가할 부분! 
+        처음 저장함
+        이미 있는 번호면 PASS
+        추가하기 
+        전에 저장한거에 대한 수정(삭제)
+        갯수 어떻게 출력할 건지 생각 
+        """
         likes_list = check_likesinfo(email)
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
             update_likes_product(product_n, email)

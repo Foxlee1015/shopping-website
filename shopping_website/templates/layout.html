@@ -91,6 +91,7 @@
         </a>
         {% if session.logged_in %}
         <a class="btn btn-sm btn-outline-secondary mr-4" href="/register_product">상품 등록</a>
+        <a class="btn btn-sm btn-outline-secondary mr-4" href="/wish_list">장바구니</a>
         <a class="btn btn-sm btn-outline-secondary mr-4" href="/mypage">My page</a>
         <a class="btn btn-sm btn-outline-secondary mr-4" href="/logout">Log out</a>
         <a class="btn btn-sm btn-outline-secondary" href="/board">Q & A</a>
@@ -144,7 +145,7 @@
           <p></p>
           <!--<a class="btn btn-sm btn-outline-secondary" type="submit" href="/product_list">장바구니</a>-->
           <p></p>
-          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">자세히</a>
+          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">자세히 {{ p_list[i][4] }} </a>            <!-- uid 가 아닌 갯수 출력하기! -->
         </div>
         <div class="col-auto d-none d-lg-block">
           <!--<svg class="bd-placeholder-img" width="200" height="250"  src="../static/images/1.jpg"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>-->

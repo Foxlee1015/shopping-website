@@ -117,4 +117,3 @@ def update_1st_like(new_list,email):
     conn.commit()
     c.close()
     conn.close()
-
