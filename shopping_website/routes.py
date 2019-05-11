@@ -24,16 +24,6 @@ Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품"
 def home():
     product_list, likes_count_all = check_product()
     n = len(product_list)
-    """
-    likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
-    for i in range(n):
-        x = product_list[i][4]
-        if x != None:
-            likes_count = x.count(',') + 1
-            likes_count_all.append(likes_count)
-        else:
-            likes_count_all.append(0)
-    """
     print(likes_count_all)
     return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
 
