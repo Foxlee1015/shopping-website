@@ -17,18 +17,14 @@ from werkzeug.utils import secure_filename
 from flask_mail import Message
 
 #layout list
-Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
-
-@app.route("/test")
-def test():
-    return render_template('layout_2.html')
+#Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
 @app.route("/")
 @app.route("/home")
 def home():
     product_list, likes_count_all = check_product()
     n = len(product_list)
-    return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
+    return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)     # 상품리스트, 상품 갯수(html-for_loop), 좋아요 갯수
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -114,16 +110,14 @@ def reset_pass():
     except:
         form = ResetPasswordForm(request.form)
         if request.method == "POST":
-            email = form.email.data
-            password = form.password.data
-            confirm = form.confirm.data
+            email, password, confirm = form.email.data, form.password.data, form.confirm.data
             if password != confirm:
                 flash('Check your password')
                 return render_template("reset_pass.html", form=form)
             if check_loginfo(email) == None:
                 flash('This email doesnt exist')
                 return render_template("reset_pass.html", form=form)
-            else:
+            else:                                                                     # 함수 추가
                 password = hashlib.sha256(password.encode()).hexdigest()
                 c, conn = connection()
                 change_pass = c.execute("UPDATE user_list SET password = (%s) WHERE email = (%s)", [thwart(password), thwart(email)])
@@ -176,7 +170,7 @@ def board_page():
 
 @app.route('/board', methods=["GET","POST"])
 def board_main():
-    c, conn = connection()
+    c, conn = connection()                                      # 함수 추가
     board_count = c.execute("SELECT board_n FROM board")                           # 게시된 글의 수.
     board_count_number = board_count                                               # board_count_number 수 저장
     board_n_list = c.fetchall()                                                   # c.exectue 에서 게시판의 넘버 정보 가져오기
@@ -197,7 +191,7 @@ def my_page():
         email = session['email']          #로그인된 상태에서의 이메일 정보 가져와서 db에 아래 정보와 같이 저장
         if request.method == "POST" and form.validate():
             address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
-            c, conn = connection()
+            c, conn = connection()                                                                              #함수 추가
             data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
             if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
                 update_location(address, zipcode, phonenumber, email)
@@ -260,7 +254,7 @@ def wish_list():
         product_list, likes_count_all = check_product()
         n = len(product_list)
         flash('등록된 상품이 없습니다.')
-        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, title="wishlist")
+        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
     else:
         likes_product_number = product_numbers.split(',')                                       # ['2', '7'] 로 변환
         n = len(likes_product_number)                                                           #
@@ -284,7 +278,7 @@ def product_details(product_n):
         # 1. 좋아요 없을때 2. 있으면 추가 3. 이미 그 번호가 있을 때
         product_likes_list = check_product_likesinfo(product_n)
         product_uid_list = product_likes_list[0][0]
-        if 1:
+        if 1:  # 좋아요 db에 추가
             if product_uid_list == None:                                                       # 좋아요 없을 때 추가
                 insert_product_likes(uid, product_n)
                 product_list, likes_count_all = check_product()                                                # 추가한 정보로 새로 가져오기
@@ -297,12 +291,15 @@ def product_details(product_n):
                 product_list = check_product()
                 n = len(product_list)
         likes_list = check_likesinfo(email)
+        # 좋아요 후 return
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
             update_likes_product(product_n, email)
             product_list, likes_count_all = check_product()                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
+            flash('장바구니에 추가되었습니다.')
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
+            flash('이미 장바구니에 있습니다.')
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
         else:                                                     # 이미 있고 추가로 되는 경우
             old_list = likes_list[0][0]
@@ -310,6 +307,7 @@ def product_details(product_n):
             update_1st_like(new_list, email)
             product_list, likes_count_all = check_product()                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
+            flash('장바구니에 추가되었습니다.')
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
     else:
         product_list, likes_count_all = check_product()

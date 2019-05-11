@@ -60,7 +60,7 @@ def check_product():
             likes_count_all.append(likes_count)
         else:
             likes_count_all.append(0)
-    return product_list, likes_count_all
+    return product_list, likes_count_all             # 상품정보(번호,이름,소개) , 좋아요 수 출력
 
 def insert_data_product(product_name, product_intro, filename):
     c, conn = connection()
