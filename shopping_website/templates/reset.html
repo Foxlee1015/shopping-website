@@ -10,7 +10,6 @@
     <header class="member-header">
         <h1 class="member-logo">
 			<image href="/" src="../images/1.png" width="100%" height="100%" class="member-logo__img" alt="coupang"></image>
-
         </h1>
     </header>
 	<br>
@@ -31,22 +30,11 @@
 						</span>
 					</label>
 				</div>
-				<!--<div class="member__field-wrap">
-					<label class="member__input-wrap" for="login-email-input">
-						<span class="member__input-group member__input-group--icon-label">
-							<i class="member__sprite member__sprite--password"></i>
-						</span>
-						<span class="member__input-group">
-							<input type="password" class="member__input _loginPasswordInput" placeholder = "Password" name="password" value="{{request.form.password}}">
-						</span>
-					</label>
-				</div>-->
 			</div>
 			<div class="login__content login__content--trigger">
 				<input class="login__button login__button--submit _loginSubmitButton" type="submit" value="Reset Password">
 			</div>
 			<hr class="login__separator">
-			<!--<a class="login__button login__button--join _loginJoinLink" href="/register">Sing up</a>-->
 		</form>
 		<hr class="login__separator">
 		{% with messages = get_flashed_messages(with_categories=true) %}

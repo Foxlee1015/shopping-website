@@ -19,12 +19,15 @@ from flask_mail import Message
 #layout list
 Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
+@app.route("/test")
+def test():
+    return render_template('layout_2.html')
+
 @app.route("/")
 @app.route("/home")
 def home():
     product_list, likes_count_all = check_product()
     n = len(product_list)
-    print(likes_count_all)
     return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
 
 @app.route('/login/', methods=["GET", "POST"])
@@ -69,10 +72,10 @@ def register_page():
             password = hashlib.sha256(pass_data.encode()).hexdigest()
             if check_loginfo(email) != None:
                 flash("That email is already taken, please choose another")
-                return render_template('register_test.html', form=form)
+                return render_template('register.html', form=form)
             if check_username(username) != None:
                 flash("That username is already taken, please choose another")
-                return render_template('register_test.html', form=form)
+                return render_template('register.html', form=form)
             else:
                 insert_data(email, username, password)
                 gc.collect()
@@ -82,7 +85,7 @@ def register_page():
                 return redirect(url_for('home'))
         else:
             flash("Type the info")
-        return render_template("register_test.html", form=form)
+        return render_template("register.html", form=form)
 
 @app.route("/reset/", methods=["GET", "POST"])
 def reset():
@@ -165,9 +168,9 @@ def board_page():
                 return render_template("home.html")
             else:
                 flash('Wrong password')
-                return render_template("board_write.html", form=form)
+                return render_template("board_write.html", form=form, title="board_write")
         else:
-            return render_template("board_write.html", form=form, username=username)
+            return render_template("board_write.html", form=form, username=username, title="board_write")
     except:
         return redirect(url_for('login'))
 
@@ -185,7 +188,7 @@ def board_main():
             board_data = c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_number)])  # count_number = 게시글의 넘버 // 보드 넘버를 기준으로 보드넘버, 제목, 내용, 이메일 가져옴
             board_data1 = c.fetchone()[i]
             board_list[x][i] = board_data1                                         # 가져온 데이터 리스트에 저장
-    return render_template("board_main.html", board_list=board_list, board_count_n=board_count_number)
+    return render_template("board_main.html", board_list=board_list, board_count_n=board_count_number, title="board_main")
 
 @app.route('/mypage', methods=["GET", "POST"])
 def my_page():
@@ -211,10 +214,10 @@ def my_page():
             data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
             if data != 0:
                 location_data_all = show_current_location(email)
-                return render_template("mypage.html", form=form, location_data_all=location_data_all)
+                return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
             else:
                 location_data_all = ((""),(""),(""),(""),)   # data == 0 인 경우에는 db에 location data 가 없으므로 빈 행렬로 html 에 빈칸으로 출력
-                return render_template("mypage.html", form=form, location_data_all=location_data_all)
+                return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
     except:
         return redirect(url_for('login'))
 
@@ -252,13 +255,19 @@ def register_product():
 def wish_list():
     email = session['email']                                                                # 로그인 상태 이메일 가져오기
     likes_list = check_likesinfo(email)                                                     # 이메일에 저장된 likes 상품 번호 가져오기
-    product_numbers = likes_list[0][0]                                                      # 2,7  (상품번호, 상품번호) 형식에서
-    likes_product_number = product_numbers.split(',')                                       # ['2', '7'] 로 변환
-    n = len(likes_product_number)                                                           #
-    wish_list_products = []
-    for i in range(n):                                                                      # likes 갯수 만큼 loop
-        wish_list_products.append(get_product_info(likes_product_number[i]))                # 리스트에 튜플(get_product_info(상품번호))저장
-    return render_template('wishlist.html', n=n, wish_list_products=wish_list_products)
+    product_numbers = likes_list[0][0]                       # 2,7  (상품번호, 상품번호) 형식에서
+    if product_numbers == None:
+        product_list, likes_count_all = check_product()
+        n = len(product_list)
+        flash('등록된 상품이 없습니다.')
+        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, title="wishlist")
+    else:
+        likes_product_number = product_numbers.split(',')                                       # ['2', '7'] 로 변환
+        n = len(likes_product_number)                                                           #
+        wish_list_products = []
+        for i in range(n):                                                                      # likes 갯수 만큼 loop
+            wish_list_products.append(get_product_info(likes_product_number[i]))                # 리스트에 튜플(get_product_info(상품번호))저장
+        return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wishlist")
 
 @app.route("/product_details/<int:product_n>", methods=["GET", "POST"])              # 질문? layout 에서 자세히를 누를때 상품 번호가 주소에 포함되고 그 상품번호가 <int:product_n> 에 들어가짐
 @login_required
@@ -308,4 +317,5 @@ def product_details(product_n):
         for i in range(n):                                        # 해당 상품의 정보 가져오고
             if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보와 원하는 상품의 번호와 일치하는 정보
                 product_detail = product_list[i]                  # 가져옴
-        return render_template('product_list.html', product_detail=product_detail)
+        return render_template('product_list.html', product_detail=product_detail, title="product_datails")
+
