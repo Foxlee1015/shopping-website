@@ -4,8 +4,8 @@ import datetime
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
-from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm
-from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like, check_product_likesinfo, insert_product_likes, update_product_likes
+from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like, check_product_likesinfo, insert_product_likes, update_product_likes, register_seller, get_rank
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -20,11 +20,25 @@ from flask_mail import Message
 #Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
 @app.route("/")
-@app.route("/home")
+@app.route("/home", methods=["GET", "POST"])
 def home():
     product_list, likes_count_all = check_product()
     n = len(product_list)
-    return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)     # 상품리스트, 상품 갯수(html-for_loop), 좋아요 갯수
+    try:
+
+        form = Register_seller_Form(request.form)
+        if request.method == "POST" and form.validate():
+            email = session['email']
+            register_seller(email)
+            flash('판매자로 등록되셨습니다.')
+            rank = get_rank(email)
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank="1")
+        else:
+            email = session['email']
+            rank = get_rank(email)
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)     # 상품리스트, 상품 갯수(html-for_loop), 좋아요 갯수
+    except:
+        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -219,9 +233,20 @@ def my_page():
 def register_product():
     random_hex = secrets.token_hex(8)
     form = ProductForm(request.form)
+    email = session['email']
+    print(email)
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT rank FROM user_list WHERE email = (%s)", [thwart(email)])
+    rank = c.fetchall()
+    print('22', rank)
+    #판매자등록
+    if rank[0][0] == None:
+        flash('판매자등록을 먼저 해주십시오')
+        return redirect(url_for('home'))
+
     if request.method == "POST" :
-        product_name = form.product_name.data
-        product_intro = form.product_intro.data
+        product_name, product_intro = form.product_name.data, form.product_intro.data
         file = request.files['file']                  # post 된 파일 정보 가져옴
         if not file:                                  # 파일이 존재하지 않으면
             flash('no file')

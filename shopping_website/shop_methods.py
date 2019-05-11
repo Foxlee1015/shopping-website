@@ -160,3 +160,21 @@ def update_product_likes(product_n,new_product_likes):
     c.close()
     conn.close()
 
+def register_seller(email):
+    c, conn = connection()
+    x = "1" # 판매자 rank = 1, 일반등록자는 none
+    c.execute("set names utf8")  # db에 한글 저장
+    c.execute("UPDATE user_list SET rank=%s WHERE email=%s", [thwart(x), thwart(email)])
+    conn.commit()
+    c.close()
+    conn.close()
+
+def get_rank(email):           #이메일 입력 -> 비밀번호 출력
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT rank FROM user_list WHERE email = (%s)", [thwart(email)])
+    rank = c.fetchall()
+    rank = rank[0][0]
+    return rank
+
+

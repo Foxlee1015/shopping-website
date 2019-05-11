@@ -46,3 +46,6 @@ class ProductForm(Form):
 
 class LikesForm(Form):
     submit = SubmitField('장바구니')
+
+class Register_seller_Form(Form):
+    submit = SubmitField('판매자등록')

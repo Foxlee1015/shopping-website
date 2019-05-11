@@ -24,7 +24,13 @@
             내 정보
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            {% if rank == None %}
+            <form action="{{ url_for('home') }}" method="POST">
+              <input class="dropdown-item" href="/register_product" type="submit" value="판매자등록" ></input>
+            </form>
+            {% else %}
             <a class="dropdown-item" href="/register_product">상품 등록</a>
+            {% endif %}
             <a class="dropdown-item" href="/wish_list">장바구니</a>
             <a class="dropdown-item" href="/mypage">My page</a>
             <a class="dropdown-item" href="/board">Q & A</a>
