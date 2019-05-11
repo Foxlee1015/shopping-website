@@ -138,14 +138,15 @@
     <div class="col-md-6"> <!--상품 포스트 1 시작-->
       <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
         <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}</strong>
+          <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}  </strong>
           <h3 class="mb-0"></h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
+
           <p class="card-text mb-auto">상품 소개: {{ p_list[i][2] }}</p>
           <p></p>
           <!--<a class="btn btn-sm btn-outline-secondary" type="submit" href="/product_list">장바구니</a>-->
           <p></p>
-          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">자세히 {{ p_list[i][4] }} </a>            <!-- uid 가 아닌 갯수 출력하기! -->
+          <div class="mb-1 text-muted">좋아요 : {{ likes_count_all[i] }}</div>
+          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">자세히</a>            <!-- uid 가 아닌 갯수 출력하기! -->
         </div>
         <div class="col-auto d-none d-lg-block">
           <!--<svg class="bd-placeholder-img" width="200" height="250"  src="../static/images/1.jpg"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">상품사진</text></svg>-->

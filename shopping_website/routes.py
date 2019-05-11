@@ -5,7 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm
-from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like, check_product_likesinfo, insert_product_likes, update_product_likes
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -24,7 +24,15 @@ Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품"
 def home():
     product_list = check_product()
     n = len(product_list)
-    return render_template('home.html', p_list=product_list, n=n)
+    likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
+    for i in range(n):
+        x = product_list[i][4]
+        if x != None:
+            likes_count = x.count(',') + 1
+            likes_count_all.append(likes_count)
+        else:
+            likes_count_all.append(0)
+    return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -271,34 +279,76 @@ def product_details(product_n):
         info_list = check_loginfo(email)
         uid = str(info_list[0][0])
         product_n = str(product_n)
-        c, conn = connection()
-        c.execute("set names utf8")  # db에 한글 저장
-        c.execute("UPDATE product_info SET likes=%s WHERE product_n=%s", [thwart(uid), thwart(product_n)])
-        conn.commit()
-        c.close()
-        conn.close()
-        """
-        # 수정 및 추가할 부분! 
-        처음 저장함
-        이미 있는 번호면 PASS
-        추가하기 
-        전에 저장한거에 대한 수정(삭제)
-        갯수 어떻게 출력할 건지 생각 
-        """
+        # 1. 좋아요 없을때 2. 있으면 추가 3. 이미 그 번호가 있을 때
+        product_likes_list = check_product_likesinfo(product_n)
+        print(product_likes_list)
+        print(product_n)
+        product_uid_list = product_likes_list[0][0]
+        print('test01')
+        if 1:
+            print(product_uid_list)
+            if product_uid_list == None:                                                       # 좋아요 없을 때 추가
+                print('test02')
+                insert_product_likes(uid, product_n)
+                product_list = check_product()                                                # 추가한 정보로 새로 가져오기
+                n = len(product_list)
+                print('test02')
+                #return render_template('product_list.html', n=numbers, p_list=product_list)
+            elif uid in str(product_uid_list):                                                       # 이미 있는 경우
+                print('test03')
+                pass
+                #return render_template('product_list.html', n=numbers, p_list=product_list)
+            else:                                                                             # 기존 데이터에 추가하기
+                print('test04')
+                new_product_likes = str(product_uid_list) + "," + uid
+                print(product_n, new_product_likes)
+                update_product_likes(product_n, new_product_likes)
+                product_list = check_product()
+                n = len(product_list)
+                print('test04')
+                #return render_template('product_list.html', n=numbers, p_list=product_list)
         likes_list = check_likesinfo(email)
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
+            print('test05')
             update_likes_product(product_n, email)
             product_list = check_product()                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
+            print('test05')
             return render_template('home.html', n=n, p_list=product_list)
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
-            return render_template('product_list.html', n=numbers, p_list=product_list)
+            print('test06')
+            # 함수로
+            likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
+            for i in range(n):
+                x = product_list[i][4]
+                if x != None:
+                    likes_count = x.count(',') + 1
+                    likes_count_all.append(likes_count)
+                else:
+                    likes_count_all.append(0)
+            return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
         else:                                                     # 이미 있고 추가로 되는 경우
+            print('test07')
             old_list = likes_list[0][0]
             new_list = likes_list[0][0] + "," + product_n
             update_1st_like(new_list, email)
             product_list = check_product()                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
-            return render_template('home.html', n=n, p_list=product_list)
+            print('test07')
+            # 함수로
+            likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
+            for i in range(n):
+                x = product_list[i][4]
+                if x != None:
+                    likes_count = x.count(',') + 1
+                    likes_count_all.append(likes_count)
+                else:
+                    likes_count_all.append(0)
+            return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
     else:
-        return render_template('product_list.html', n=numbers, p_list=product_list)
+        product_list = check_product()
+        n = len(product_list)
+        for i in range(n):
+            if str(product_n) == str(product_list[i][0]):
+                product_detail = product_list[i]
+        return render_template('product_list.html', product_detail=product_detail)

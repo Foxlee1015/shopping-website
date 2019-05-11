@@ -117,3 +117,37 @@ def update_1st_like(new_list,email):
     conn.commit()
     c.close()
     conn.close()
+
+def add_likes_product(uid,product_n):
+    c, conn = connection()
+    c.execute("set names utf8")  # db에 한글 저장
+    c.execute("UPDATE product_info SET likes=%s WHERE product_n=%s", (thwart(uid), thwart(product_n)))
+    conn.commit()
+    c.close()
+    conn.close()
+
+def check_product_likesinfo(product_n):           #이메일 입력 -> 비밀번호 출력
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT likes FROM product_info WHERE product_n = (%s)", [thwart(product_n)])
+    product_likes_list = c.fetchall()
+    if data == 0:  # c.execute 로부터 해당 이메일이 존재하지 않으면 data == 0
+        return None
+    else:
+        return product_likes_list
+def insert_product_likes(uid,product_n):
+    c, conn = connection()
+    c.execute("set names utf8")  # db에 한글 저장
+    c.execute("UPDATE product_info SET likes=%s WHERE product_n=%s", [thwart(uid), thwart(product_n)])
+    conn.commit()
+    c.close()
+    conn.close()
+
+def update_product_likes(product_n,new_product_likes):
+    c, conn = connection()
+    c.execute("set names utf8")  # db에 한글 저장
+    data1= c.execute("UPDATE product_info SET likes=%s WHERE product_n=%s", [thwart(new_product_likes), thwart(product_n)])
+    conn.commit()
+    c.close()
+    conn.close()
+
