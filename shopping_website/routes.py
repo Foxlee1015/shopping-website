@@ -22,8 +22,9 @@ Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품"
 @app.route("/")
 @app.route("/home")
 def home():
-    product_list = check_product()
+    product_list, likes_count_all = check_product()
     n = len(product_list)
+    """
     likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
     for i in range(n):
         x = product_list[i][4]
@@ -32,6 +33,8 @@ def home():
             likes_count_all.append(likes_count)
         else:
             likes_count_all.append(0)
+    """
+    print(likes_count_all)
     return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
 
 @app.route('/login/', methods=["GET", "POST"])
@@ -55,9 +58,9 @@ def login():
                         session['logged_in'] = True
                         session['email'] = request.form['email']
                         flash(username + "님 즐거운 쇼핑 되십시오.")
-                        product_list = check_product()
+                        product_list, likes_count_all = check_product()
                         n = len(product_list)
-                        return render_template("home.html", username=username, p_list=product_list, n=n)
+                        return render_template("home.html", username=username, p_list=product_list, n=n, likes_count_all=likes_count_all)
                     else:
                         flash('Wrong password')
                         return render_template("login.html", form=form) # error=error
@@ -248,9 +251,9 @@ def register_product():
             #file.thumbnail(output_size)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             insert_data_product(product_name, product_intro, filename)             ## db에 저장
-            product_list = check_product()                                         ## db에 저장된 테이블 리스트로 가져옴([1]이름,[2]설명,[3]파일이름)
+            product_list, likes_count_all = check_product()                                         ## db에 저장된 테이블 리스트로 가져옴([1]이름,[2]설명,[3]파일이름)
             n = len(product_list)
-            return render_template('home.html', p_list=product_list, n=n)
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
     else:
         return render_template("register_product.html", form=form)
 
@@ -272,7 +275,7 @@ def wish_list():
 def product_details(product_n):
     form =LikesForm(request.form)
     email = session['email']
-    product_list = check_product()
+    product_list, likes_count_all = check_product()
     n= len(product_list)
     numbers = product_n - 2                               # 현재 상품 번호와 db에 순서 불일치
     if request.method == "POST":
@@ -281,74 +284,38 @@ def product_details(product_n):
         product_n = str(product_n)
         # 1. 좋아요 없을때 2. 있으면 추가 3. 이미 그 번호가 있을 때
         product_likes_list = check_product_likesinfo(product_n)
-        print(product_likes_list)
-        print(product_n)
         product_uid_list = product_likes_list[0][0]
-        print('test01')
         if 1:
-            print(product_uid_list)
             if product_uid_list == None:                                                       # 좋아요 없을 때 추가
-                print('test02')
                 insert_product_likes(uid, product_n)
-                product_list = check_product()                                                # 추가한 정보로 새로 가져오기
+                product_list, likes_count_all = check_product()                                                # 추가한 정보로 새로 가져오기
                 n = len(product_list)
-                print('test02')
-                #return render_template('product_list.html', n=numbers, p_list=product_list)
             elif uid in str(product_uid_list):                                                       # 이미 있는 경우
-                print('test03')
                 pass
-                #return render_template('product_list.html', n=numbers, p_list=product_list)
             else:                                                                             # 기존 데이터에 추가하기
-                print('test04')
                 new_product_likes = str(product_uid_list) + "," + uid
-                print(product_n, new_product_likes)
                 update_product_likes(product_n, new_product_likes)
                 product_list = check_product()
                 n = len(product_list)
-                print('test04')
-                #return render_template('product_list.html', n=numbers, p_list=product_list)
         likes_list = check_likesinfo(email)
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
-            print('test05')
             update_likes_product(product_n, email)
-            product_list = check_product()                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
+            product_list, likes_count_all = check_product()                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
-            print('test05')
-            return render_template('home.html', n=n, p_list=product_list)
+            return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
-            print('test06')
-            # 함수로
-            likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
-            for i in range(n):
-                x = product_list[i][4]
-                if x != None:
-                    likes_count = x.count(',') + 1
-                    likes_count_all.append(likes_count)
-                else:
-                    likes_count_all.append(0)
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
         else:                                                     # 이미 있고 추가로 되는 경우
-            print('test07')
             old_list = likes_list[0][0]
             new_list = likes_list[0][0] + "," + product_n
             update_1st_like(new_list, email)
-            product_list = check_product()                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
+            product_list, likes_count_all = check_product()                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
-            print('test07')
-            # 함수로
-            likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
-            for i in range(n):
-                x = product_list[i][4]
-                if x != None:
-                    likes_count = x.count(',') + 1
-                    likes_count_all.append(likes_count)
-                else:
-                    likes_count_all.append(0)
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
     else:
-        product_list = check_product()
+        product_list, likes_count_all = check_product()
         n = len(product_list)
-        for i in range(n):
-            if str(product_n) == str(product_list[i][0]):
-                product_detail = product_list[i]
+        for i in range(n):                                        # 해당 상품의 정보 가져오고
+            if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보와 원하는 상품의 번호와 일치하는 정보
+                product_detail = product_list[i]                  # 가져옴
         return render_template('product_list.html', product_detail=product_detail)

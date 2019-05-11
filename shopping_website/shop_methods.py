@@ -51,7 +51,16 @@ def check_product():
     c.execute("set names utf8")  # db 한글 있을 시 필요
     data = c.execute("SELECT * FROM product_info")
     product_list = c.fetchall()
-    return product_list
+    n = len(product_list)
+    likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
+    for i in range(n):
+        x = product_list[i][4]
+        if x != None:
+            likes_count = x.count(',') + 1
+            likes_count_all.append(likes_count)
+        else:
+            likes_count_all.append(0)
+    return product_list, likes_count_all
 
 def insert_data_product(product_name, product_intro, filename):
     c, conn = connection()
