@@ -8,6 +8,8 @@ UPLOAD_FOLDER = 'shopping_website/static/images/'                             # 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
+app.jinja_env.auto_reload= True
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -18,8 +20,8 @@ login_manager.login_message_category = 'info'
 app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
-app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
+app.config['MAIL_USERNAME'] = 'dh16931@gmail.com' # os.environ.get('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = 'rbhs svci fmwm atpv' #os.environ.get('EMAIL_PASS')
 mail = Mail(app)
 
 from shopping_website import routes

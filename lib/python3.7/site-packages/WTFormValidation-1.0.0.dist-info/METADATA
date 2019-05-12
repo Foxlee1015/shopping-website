@@ -1,0 +1,21 @@
+Metadata-Version: 2.0
+Name: WTFormValidation
+Version: 1.0.0
+Summary: The missing link between WTForms and http://formvalidation.io
+Home-page: https://github.com/sc0tt/WTFormValidation
+Author: Scott Adie
+Author-email: scott.w@adie.io
+License: MIT
+Platform: any
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: WTForms
+
+UNKNOWN
+
+

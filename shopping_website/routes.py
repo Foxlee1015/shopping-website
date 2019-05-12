@@ -5,7 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form
-from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like, check_product_likesinfo, insert_product_likes, update_product_likes, register_seller, get_rank
+from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like, check_product_likesinfo, insert_product_likes, update_product_likes, register_seller, get_rank, check_user_location
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -25,18 +25,17 @@ def home():
     product_list, likes_count_all = check_product()
     n = len(product_list)
     try:
-
         form = Register_seller_Form(request.form)
+        email = session['email']
         if request.method == "POST" and form.validate():
-            email = session['email']
             register_seller(email)
             flash('판매자로 등록되셨습니다.')
-            rank = get_rank(email)
-            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank="1")
+            rank = get_rank(email)              # 등록된 후 rank 가져오기
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
         else:
             email = session['email']
             rank = get_rank(email)
-            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)     # 상품리스트, 상품 갯수(html-for_loop), 좋아요 갯수
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
     except:
         return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
 
@@ -205,22 +204,20 @@ def my_page():
         email = session['email']          #로그인된 상태에서의 이메일 정보 가져와서 db에 아래 정보와 같이 저장
         if request.method == "POST" and form.validate():
             address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
-            c, conn = connection()                                                                              #함수 추가
-            data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
-            if data != 0:     # 기존 배송 데이터가 있으면 UPDATE
+            location_data = check_user_location(email)
+            if location_data != 0:     # 기존 배송 데이터가 있으면 UPDATE
                 update_location(address, zipcode, phonenumber, email)
                 flash("배송지 업데이트에 성공했습니다.")
                 gc.collect()
                 return render_template("home.html", form=form)                  # 새로 입력되는 주소로 업데이트 되고 홈으로 돌아감
-            else: #data == 0:           # 기존 배송 데이터가 없으면 INSERT
+            else:                                                               #data == 0:           # 기존 배송 데이터가 없으면 INSERT
                 insert_location(email, address, zipcode, phonenumber)
                 flash(" 소중한 정보 감사합니다.")
                 gc.collect()
                 return render_template("home.html", form=form)       # 데이터 입력하고 홈으로 돌아감
         else:                                                        # 로그인된 상태에서 email 정보 가져오고, 이 메일을 기반으로 저장된 데이터를 가져와서 기존의 데이터를 빈칸에 넣는다.
-            c, conn = connection()
-            data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
-            if data != 0:
+            location_data = check_user_location(email)
+            if location_data != 0:
                 location_data_all = show_current_location(email)
                 return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
             else:
@@ -234,17 +231,10 @@ def register_product():
     random_hex = secrets.token_hex(8)
     form = ProductForm(request.form)
     email = session['email']
-    print(email)
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT rank FROM user_list WHERE email = (%s)", [thwart(email)])
-    rank = c.fetchall()
-    print('22', rank)
-    #판매자등록
-    if rank[0][0] == None:
+    rank = get_rank(email)
+    if rank == None:
         flash('판매자등록을 먼저 해주십시오')
         return redirect(url_for('home'))
-
     if request.method == "POST" :
         product_name, product_intro = form.product_name.data, form.product_intro.data
         file = request.files['file']                  # post 된 파일 정보 가져옴
@@ -295,12 +285,10 @@ def product_details(product_n):
     email = session['email']
     product_list, likes_count_all = check_product()
     n= len(product_list)
-    numbers = product_n - 2                               # 현재 상품 번호와 db에 순서 불일치
     if request.method == "POST":
         info_list = check_loginfo(email)
         uid = str(info_list[0][0])
         product_n = str(product_n)
-        # 1. 좋아요 없을때 2. 있으면 추가 3. 이미 그 번호가 있을 때
         product_likes_list = check_product_likesinfo(product_n)
         product_uid_list = product_likes_list[0][0]
         if 1:  # 좋아요 db에 추가
@@ -316,7 +304,7 @@ def product_details(product_n):
                 product_list = check_product()
                 n = len(product_list)
         likes_list = check_likesinfo(email)
-        # 좋아요 후 return
+        # likes_list[0][0] = 기존에 장바구니에 저장된 상품 번호
         if likes_list[0][0] == None:                      # 아예 db에 likes 가 없는 경우
             update_likes_product(product_n, email)
             product_list, likes_count_all = check_product()                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
@@ -326,19 +314,18 @@ def product_details(product_n):
         elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
             flash('이미 장바구니에 있습니다.')
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
-        else:                                                     # 이미 있고 추가로 되는 경우
-            old_list = likes_list[0][0]
+        else:
             new_list = likes_list[0][0] + "," + product_n
             update_1st_like(new_list, email)
             product_list, likes_count_all = check_product()                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
             flash('장바구니에 추가되었습니다.')
             return render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
-    else:
+    else: #GET
         product_list, likes_count_all = check_product()
         n = len(product_list)
-        for i in range(n):                                        # 해당 상품의 정보 가져오고
-            if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보와 원하는 상품의 번호와 일치하는 정보
-                product_detail = product_list[i]                  # 가져옴
+        for i in range(n):                                        # 해당 상품의 정보 가져오고(DB)
+            if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보(DB)와 자세히 버튼을 누른 상품의 번호와 일치하면
+                product_detail = product_list[i]
         return render_template('product_list.html', product_detail=product_detail, title="product_datails")
 

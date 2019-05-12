@@ -1,0 +1,3 @@
+[console_scripts]
+image-resize = image_resize:console_main
+

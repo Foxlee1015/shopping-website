@@ -175,6 +175,15 @@ def get_rank(email):           #이메일 입력 -> 비밀번호 출력
     data = c.execute("SELECT rank FROM user_list WHERE email = (%s)", [thwart(email)])
     rank = c.fetchall()
     rank = rank[0][0]
+    c.close()
+    conn.close()
     return rank
 
-
+def check_user_location(email):
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM user_location WHERE email=(%s)", [thwart(email)])
+    location_data = data
+    c.close()
+    conn.close()
+    return location_data
