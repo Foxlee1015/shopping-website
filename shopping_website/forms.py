@@ -49,3 +49,9 @@ class LikesForm(Form):
 
 class Register_seller_Form(Form):
     submit = SubmitField('판매자등록')
+
+class Buy_Form(Form):
+    submit = SubmitField('구매하기')
+
+class Location_track_Form(Form):
+    submit = SubmitField('배송조회')

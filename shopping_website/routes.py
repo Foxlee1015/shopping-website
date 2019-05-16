@@ -4,7 +4,7 @@ import datetime
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
-from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form
+from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form, Buy_Form, Location_track_Form
 from shopping_website.shop_methods import send_reset_email, check_loginfo, check_username, insert_data, insert_data_board, check_product, insert_data_product, check_likesinfo, get_product_info, update_location, insert_location, show_current_location, update_likes_product, update_1st_like, check_product_likesinfo, insert_product_likes, update_product_likes, register_seller, get_rank, check_user_location
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
@@ -15,7 +15,9 @@ import gc
 from functools import wraps
 from werkzeug.utils import secure_filename
 from flask_mail import Message
-
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 #layout list
 #Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
@@ -262,21 +264,31 @@ def register_product():
 @app.route("/wish_list",  methods=["GET", "POST"] )
 @login_required
 def wish_list():
+    form = Buy_Form(request.form)
     email = session['email']                                                                # 로그인 상태 이메일 가져오기
-    likes_list = check_likesinfo(email)                                                     # 이메일에 저장된 likes 상품 번호 가져오기
+    likes_list = check_likesinfo(email)                                                     # 이메일에 저장된 likes 상품 번호$
     product_numbers = likes_list[0][0]                       # 2,7  (상품번호, 상품번호) 형식에서
-    if product_numbers == None:
-        product_list, likes_count_all = check_product()
-        n = len(product_list)
-        flash('등록된 상품이 없습니다.')
-        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
-    else:
-        likes_product_number = product_numbers.split(',')                                       # ['2', '7'] 로 변환
-        n = len(likes_product_number)                                                           #
-        wish_list_products = []
-        for i in range(n):                                                                      # likes 갯수 만큼 loop
-            wish_list_products.append(get_product_info(likes_product_number[i]))                # 리스트에 튜플(get_product_info(상품번호))저장
+    likes_product_number = product_numbers.split(',')
+    n = len(likes_product_number)
+    wish_list_products = []
+    for i in range(n):
+        wish_list_products.append(get_product_info(likes_product_number[i]))
+    if request.method =="POST":
+        flash('구매 진행')
         return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wishlist")
+    else:
+        if product_numbers == None:
+            product_list, likes_count_all = check_product()
+            n = len(product_list)
+            flash('등록된 상품이 없습니다.')
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
+        else:
+            #likes_product_number = product_numbers.split(',')                                       # ['2', '7'] 로 변환
+            #n = len(likes_product_number)                                                           #
+            #wish_list_products = []
+            #for i in range(n):                                                                      # likes 갯수 만큼 loop
+            #    wish_list_products.append(get_product_info(likes_product_number[i]))                # 리스트에 튜플(get_prod$
+            return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wishlist")
 
 @app.route("/product_details/<int:product_n>", methods=["GET", "POST"])              # 질문? layout 에서 자세히를 누를때 상품 번호가 주소에 포함되고 그 상품번호가 <int:product_n> 에 들어가짐
 @login_required
@@ -329,3 +341,43 @@ def product_details(product_n):
                 product_detail = product_list[i]
         return render_template('product_list.html', product_detail=product_detail, title="product_datails")
 
+def Get_location_data():       #(운송장번호 입력) - 현재는 예제 622781895012
+    driver = webdriver.Chrome('chromedriver_win32\chromedriver_(2)')
+    driver.implicitly_wait(3)
+    driver.get('https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=%EB%B0%B0%EC%86%A1%EC%A1%B0%ED%9A%8C')  # 배송조회 사이트 조회
+    driver.find_element_by_xpath('//*[@id="_doorToDoor"]/div[1]/div[1]/select/option[2]').click()  #  대한통운 선택
+    driver.find_element_by_xpath('//*[@id="numb"]').click()  # 박스 클릭
+    elem = driver.find_element_by_id("numb")
+    driver.find_element_by_id('numb').send_keys("622781895012")  # Keyword = 상품 번호(운송장)
+    driver.find_element_by_xpath('// *[ @ id = "_doorToDoor"] / div[1] / div[2] / input[2]').click()
+    """
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    #print(soup)
+    table = soup.find('tbody')  #('div', {'class': '_output' })
+    print(table)
+    data = [['처리일시', '현재위치', '배송상태']]
+    for tr in table.find_all('tr'):
+        #tds = list(tr.find_all('td'))
+        data_td = []
+        for td in table.find_all('td'):
+            data_td.append(td)
+        data.append(data_td)
+    print(data)
+    """
+@app.route("/location_track",  methods=["GET", "POST"] )
+def location_track():
+    form = Location_track_Form(request.form)
+    email = session['email']             # 구매 상품으로 가져오기 해야함
+    likes_list = check_likesinfo(email)  # 이메일에 저장된 likes 상품 번호$
+    product_numbers = likes_list[0][0]  # 2,7  (상품번호, 상품번호) 형식에서
+    likes_product_number = product_numbers.split(',')
+    n = len(likes_product_number)
+    list = []
+    for i in range(n):
+        list.append(get_product_info(likes_product_number[i]))
+    if request.method == "POST":
+        Get_location_data()
+        return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
+    else:
+        return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")

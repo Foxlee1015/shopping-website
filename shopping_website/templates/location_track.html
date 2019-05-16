@@ -1,0 +1,29 @@
+{% extends "layout_2.html" %}
+{% block content %}
+<form method="POST" action="">
+     <fieldset class="form-group">
+           <legend class="border-bottom mb-4">구매 리스트. </legend>
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>상품 번호</th>
+                  <th>상품 이름</th>
+                  <th>상품 소개</th>
+                  <th>링크</th>
+                </tr>
+              </thead>
+            <tbody>
+            {% for i in range(n) %}
+            <tr>
+              <td>{{ wish_list_products[i][0][0] }}</td>
+              <td>{{ wish_list_products[i][0][1] }}</td>
+              <td>{{ wish_list_products[i][0][2] }}</td>
+              <td>____링크____</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+     </fieldset>
+     <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="상품 위치 확인">
+ </form>
+{% endblock content %}
