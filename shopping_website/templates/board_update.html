@@ -1,0 +1,52 @@
+{% extends "layout_2.html" %}
+{% block content %}
+<form action='/board_update/{{ board_list[i][0] }}' method='POST'>
+<table id="faqlist" class="blist faqlist" summary="FAQ 목록입니다.">
+    <thead>
+        <tr>
+            <th scope="col" class="lbg"><span>번호</span></th>
+            <th scope="col"><span>제목</span></th>
+            <th scope="col">email</span></th>
+        </tr>
+    </thead>
+	<tbody>
+    	<tr class="fir">
+            <td class="num">{{ board_list[i][0] }}</td>
+            <td class="qtype">{{ board_list[i][1] }}</td>
+            <td class="title"><a href="#data1" id="144">{{ board_list[i][3] }}</a></td>
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">{{ verb }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        {{ sen }}
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+                        <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+        </tr>
+        <tr id="data1" class="answer" style="display: none;">
+            <td colspan="3">
+                <div class="answerContWrap">
+                    <p class="answerCont">{{ board_list[i][2] }}</p>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+    <p></p>
+        <div class="login__content login__content--trigger">
+           <a class="btn btn-sm btn-outline-secondary" href="/board_write/{{board_list[i][0]}}">업데이트</a>
+           <!--<a class="btn btn-sm btn-outline-secondary" href="/board_update/{{ board_list[i][0] }}">삭제하기</a>-->
+           <input class="btn btn-sm btn-outline-secondary" type="submit" value="삭제하기">
+        </div>
+    <p></p>
+{% endblock content %}

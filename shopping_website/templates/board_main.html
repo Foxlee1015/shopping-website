@@ -14,7 +14,9 @@
     	<tr class="fir">
             <td class="num">{{ board_list[i][0] }}</td>
             <td class="qtype">{{ board_list[i][1] }}</td>
-            <td class="title"><a href="#data1" id="144">{{ board_list[i][3] }}</a></td>
+            <td class="title">{{ board_list[i][3] }}</td>
+            <td class="qtype"><a href="/board_update/{{ board_list[i][0] }}" id="144">수정 및 삭제</a></td>
+            </form>
         </tr>
         <tr id="data1" class="answer" style="display: none;">
             <td colspan="3">

@@ -183,20 +183,27 @@ def board_page():
     except:
         return redirect(url_for('login'))
 
+def get_board_list():
+    c, conn = connection()  # 함수 추가
+    board_count = c.execute("SELECT board_n FROM board")  # 게시된 글의 수.
+    board_count_number = board_count  # board_count_number 수 저장
+    board_n_list = c.fetchall()  # c.exectue 에서 게시판의 넘버 정보 가져오기
+    board_list = [[None for k in range(4)] for j in range(board_count_number)]  # 갯수에 맞춰 데이터가 들어갈 2차 행렬
+    for x in range(board_count_number):  # 게시글의 수 loop
+        count_number = str(board_n_list[x][
+                               0])  # 튜플에 저장된 게실글의 넘버만 가져와서 문자열로( thart에 들어갈 문자열 )   board_n_list = ((1,),(2,),(3,),(6,)) 처럼 저장됨
+        for i in range(4):  # i 0~3 (보드넘버, 제목, 내용, 이메일)
+            c.execute("set names utf8")  # 한글 데이터
+            board_data = c.execute("SELECT * FROM board WHERE board_n = (%s)", [
+                thwart(count_number)])  # count_number = 게시글의 넘버 // 보드 넘버를 기준으로 보드넘버, 제목, 내용, 이메일 가져옴
+            board_data1 = c.fetchone()[i]
+            board_list[x][i] = board_data1  # 가져온 데이터 리스트에 저장
+    return board_list, board_count_number
+
+
 @app.route('/board', methods=["GET","POST"])
 def board_main():
-    c, conn = connection()                                      # 함수 추가
-    board_count = c.execute("SELECT board_n FROM board")                           # 게시된 글의 수.
-    board_count_number = board_count                                               # board_count_number 수 저장
-    board_n_list = c.fetchall()                                                   # c.exectue 에서 게시판의 넘버 정보 가져오기
-    board_list = [[None for k in range(4)] for j in range(board_count_number)]    # 갯수에 맞춰 데이터가 들어갈 2차 행렬
-    for x in range(board_count_number):                                            # 게시글의 수 loop
-        count_number = str(board_n_list[x][0])                                     # 튜플에 저장된 게실글의 넘버만 가져와서 문자열로( thart에 들어갈 문자열 )   board_n_list = ((1,),(2,),(3,),(6,)) 처럼 저장됨
-        for i in range(4):                                                         # i 0~3 (보드넘버, 제목, 내용, 이메일)
-            c.execute("set names utf8")                                            # 한글 데이터
-            board_data = c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_number)])  # count_number = 게시글의 넘버 // 보드 넘버를 기준으로 보드넘버, 제목, 내용, 이메일 가져옴
-            board_data1 = c.fetchone()[i]
-            board_list[x][i] = board_data1                                         # 가져온 데이터 리스트에 저장
+    board_list, board_count_number = get_board_list()
     return render_template("board_main.html", board_list=board_list, board_count_n=board_count_number, title="board_main")
 
 @app.route('/mypage', methods=["GET", "POST"])
@@ -350,6 +357,7 @@ def Get_location_data():       #(운송장번호 입력) - 현재는 예제 6227
     elem = driver.find_element_by_id("numb")
     driver.find_element_by_id('numb').send_keys("622781895012")  # Keyword = 상품 번호(운송장)
     driver.find_element_by_xpath('// *[ @ id = "_doorToDoor"] / div[1] / div[2] / input[2]').click()
+    driver.close()
     """
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
@@ -381,3 +389,23 @@ def location_track():
         return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
     else:
         return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
+
+
+class Delete_Form(Form):
+    submit = SubmitField('배송조회')
+
+@app.route("/board_update/<int:board_num>", methods=["GET", "POST"])
+def board_update(board_num):
+    form = Delete_Form(request.form)
+    board_list, board_count_number = get_board_list()
+    if request.method == "POST":
+        c, conn = connection()  # 함수 추가
+        board_num = str(board_num)
+        c.execute("Delete FROM board WHERE board_n = (%s)", [thwart(board_num)])
+        conn.commit()
+        c.close()
+        conn.close()
+        flash(board_num + '번 글 삭제되었습니다.')
+        return redirect(url_for('board_main'))
+    else:
+        return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number, i=board_num, title="board_main")

@@ -55,3 +55,6 @@ class Buy_Form(Form):
 
 class Location_track_Form(Form):
     submit = SubmitField('배송조회')
+
+class Delete_Form(Form):
+    submit = SubmitField('배송조회')
