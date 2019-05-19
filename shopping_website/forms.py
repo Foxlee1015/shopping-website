@@ -32,6 +32,14 @@ class BoardForm(Form):
     confirm = PasswordField('Repeat Password')
     submit = SubmitField('ok')
 
+class Update_Form(Form):
+    title = TextAreaField('Title', [validators.Length(min=1, max=20)])
+    content = TextAreaField('Content', [validators.Length(min=10, max=50)])
+    password = PasswordField('Password', [validators.data_required(),
+                                          validators.EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat Password')
+    submit = SubmitField('ok')
+
 class LocationForm(Form):
     address = StringField('Address', [validators.Length(min=1, max=20)])
     zipcode = StringField('Zipcode', [validators.Length(min=1, max=20)])

@@ -4,7 +4,7 @@ import datetime
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
-from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form, Buy_Form, Location_track_Form
+from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form, Buy_Form, Location_track_Form, Update_Form
 from shopping_website.shop_methods import send_reset_email, check_info, check_info2, insert_data, insert_data2, insert_data3, check_product, update_data, update_location, register_seller
 from wtforms import Form, PasswordField, validators, StringField, SubmitField
 from shopping_website.dbconnect import connection
@@ -15,9 +15,25 @@ import gc
 from functools import wraps
 from werkzeug.utils import secure_filename
 from flask_mail import Message
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
+from bs4 import BeautifulSoup
+import urllib.request
+
+
+
+def Get_product_location(product_n):
+    with urllib.request.urlopen("http://service.epost.go.kr/trace.RetrieveRegiPrclDeliv.postal?sid1="+product_n) as response:
+        html = response.read()
+        soup = BeautifulSoup(html, 'html.parser')
+        print(soup)
+        meaning = soup.find('div', {'id':'print'})
+        print(meaning)
+        Get_product_location("6664503016753") # 운송장 번호 입력 (예로 6664503016753 )
+
+
+
+
+
+
 #layout list
 #Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
 
@@ -64,7 +80,9 @@ def login():
                         flash(username + "님 즐거운 쇼핑 되십시오.")
                         product_list, likes_count_all = check_product()
                         n = len(product_list)
-                        return render_template("home.html", username=username, p_list=product_list, n=n, likes_count_all=likes_count_all)
+                        rank = check_info2("rank", "user_list", "email", email)
+                        print(rank)
+                        return render_template("home.html", username=username, p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
                     else:
                         flash('Wrong password')
                         return render_template("login.html", form=form) # error=error
@@ -113,9 +131,10 @@ def reset():
             else:
                 send_reset_email(email)
                 flash('Please check your email')
-                return render_template("home.html")
+                return redirect(url_for('home'))
         else:                                                          # POST 가 아닌 GET 인 경우 reset 페이지로 이동 email 입력 후 submit 하면 post
             return render_template("reset.html")
+
 
 @app.route("/reset_pass/", methods=["GET", "POST"])
 def reset_pass():
@@ -344,32 +363,16 @@ def product_details(product_n):
         return render_template('product_list.html', product_detail=product_detail, title="product_datails")
 
 def Get_location_data(product_location_number):       #(운송장번호 입력) - 현재는 예제 622781895012
-    """
-    driver = webdriver.Chrome('chromedriver_win32\chromedriver_(2)')
-    driver.implicitly_wait(3)
-    driver.get('https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=%EB%B0%B0%EC%86%A1%EC%A1%B0%ED%9A%8C')  # 배송조회 사이트 조회
-    driver.find_element_by_xpath('//*[@id="_doorToDoor"]/div[1]/div[1]/select/option[2]').click()  #  대한통운 선택
-    driver.find_element_by_xpath('//*[@id="numb"]').click()  # 박스 클릭
-    elem = driver.find_element_by_id("numb")
-    driver.find_element_by_id('numb').send_keys("622781895012")  # Keyword = 상품 번호(운송장)
-    driver.find_element_by_xpath('// *[ @ id = "_doorToDoor"] / div[1] / div[2] / input[2]').click()
-    driver.close()
-
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    #print(soup)
-    table = soup.find('tbody')  #('div', {'class': '_output' })
-    print(table)
-    data = [['처리일시', '현재위치', '배송상태']]
-    for tr in table.find_all('tr'):
-        #tds = list(tr.find_all('td'))
-        data_td = []
-        for td in table.find_all('td'):
-            data_td.append(td)
-        data.append(data_td)
-    print(data)
-    """
-
+        with urllib.request.urlopen("https://dictionary.cambridge.org/dictionary/english/" + verb) as response:
+            html = response.read()
+            soup = BeautifulSoup(html, 'html.parser')
+            meaning = soup.find('b', {'class': 'def'})
+            if meaning == None:
+                return None
+            else:
+                meaning = meaning.get_text()
+                print(meaning)
+                return meaning
 
 @app.route("/location_track",  methods=["GET", "POST"] )
 def location_track():
@@ -395,15 +398,38 @@ class Delete_Form(Form):
 @app.route("/board_update/<int:board_num>", methods=["GET", "POST"])
 def board_update(board_num):
     form = Delete_Form(request.form)
+    update_form = Update_Form(request.form)
     board_list, board_count_number = get_board_list()
-    if request.method == "POST":
-        c, conn = connection()  # 함수 추가
-        board_num = str(board_num)
-        c.execute("Delete FROM board WHERE board_n = (%s)", [thwart(board_num)])
-        conn.commit()
-        c.close()
-        conn.close()
-        flash(board_num + '번 글 삭제되었습니다.')
+    board_num=board_num
+    email = session['email']
+    for i in range(len(board_list)):
+        if board_list[i][0] == board_num:
+            number_index = i                       # 리스트에는 비어있는 부분있어 인덱스 확인 필요
+    if board_list[number_index][3] != email:       #로그인 이메일과 해당 게시판의 정보 불일치
+        flash('권한 없음')
         return redirect(url_for('board_main'))
+    if request.method == "GET":
+        return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number,i=number_index,title="board_update", update_form=update_form)
     else:
-        return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number, i=board_num, title="board_main")
+        if request.method == "POST":
+            board_num = str(board_num)   # 테이블 입력시 int 안됌
+            if update_form.validate():
+                title, content, pass_data = update_form.title.data, update_form.content.data, update_form.password.data   # 사용자 - 보드 일치 확인 필요 (이메일로 들어가므로 불필요?)
+                data = [title, content, board_num]
+                c, conn = connection()
+                c.execute("set names utf8")  # db에 한글 저장
+                c.execute("UPDATE board SET title="+data[0]+", content="+data[1]+" WHERE board_n=%s", [thwart(data[2])])    # 하나라도 리스트로 해야함
+                conn.commit()
+                c.close()
+                conn.close()
+                return redirect(url_for('board_main'))
+            else:  # 삭제
+                c, conn = connection()  # 함수 추가
+                c.execute("Delete FROM board WHERE board_n = (%s)", [thwart(board_num)])
+                conn.commit()
+                c.close()
+                conn.close()
+                flash(board_num + '번 글 삭제되었습니다.')
+                return redirect(url_for('board_main'))
+
+
