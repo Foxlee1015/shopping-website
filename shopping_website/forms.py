@@ -1,4 +1,4 @@
-from wtforms import Form, PasswordField, validators, StringField, SubmitField, TextAreaField, FileField
+from wtforms import Form, PasswordField, validators, StringField, SubmitField, TextAreaField, FileField, BooleanField
 from flask_wtf.file import FileAllowed, FileRequired
 
 class LoginForm(Form):
@@ -33,8 +33,8 @@ class BoardForm(Form):
     submit = SubmitField('ok')
 
 class Update_Form(Form):
-    title = TextAreaField('Title', [validators.Length(min=1, max=20)])
-    content = TextAreaField('Content', [validators.Length(min=10, max=50)])
+    title = TextAreaField('Title', [validators.data_required(), validators.Length(min=1, max=20)])
+    content = TextAreaField('Content', [validators.data_required(), validators.Length(min=1, max=50)])
     password = PasswordField('Password', [validators.data_required(),
                                           validators.EqualTo('confirm', message='Passwords must match')])
     confirm = PasswordField('Repeat Password')
@@ -65,4 +65,5 @@ class Location_track_Form(Form):
     submit = SubmitField('배송조회')
 
 class Delete_Form(Form):
-    submit = SubmitField('배송조회')
+    #accept = BooleanField('Do you really want to delete this?', [validators.data_required()])
+    submit1 = SubmitField('배송조회')

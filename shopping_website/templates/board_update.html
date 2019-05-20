@@ -48,7 +48,7 @@
            <a class="btn btn-sm btn-outline-secondary" href="/board_write/{{board_list[i][0]}}">업데이트</a>
             <p></p>
            <a class="btn btn-sm btn-outline-secondary" href="/board_update/{{ board_list[i][0] }}">삭제하기</a>-->
- <form method="POST" action="">
+ <form action="/board_update/{{ board_list[i][0] }}" method="POST">
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">{{ username }} </legend>
             <div class="form-group">
@@ -109,13 +109,14 @@
         <div class="login__content login__content--trigger">
             <!--
           <input class="btn btn-sm btn-outline-secondary" type="submit" value="업데이트">-->
-            {{ update_form.submit(class="btn btn-sm btn-outline-secondary", type="submit", value="업데이트") }}
+            {{ update_form.submit(class="btn btn-sm btn-outline-secondary", type="submit", value="Update") }}
         </div>
         <p></p>
     </form>
             <form action='/board_update/{{ board_list[i][0] }}' method='POST'>
-                <input class="btn btn-sm btn-outline-secondary" type="submit" value="삭제">
+            {{ del_form.accept(class="btn btn-sm btn-outline-secondary") }}
+            {{ del_form.submit1(class="btn btn-sm btn-outline-secondary", type="submit", value="Delete") }}
             </form>
-        </div>
+
     <p></p>
 {% endblock content %}

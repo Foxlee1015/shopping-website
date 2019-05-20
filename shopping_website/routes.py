@@ -6,7 +6,7 @@ from flask import Flask, render_template, url_for, flash, request, redirect, ses
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form, Buy_Form, Location_track_Form, Update_Form
 from shopping_website.shop_methods import send_reset_email, check_info, check_info2, insert_data, insert_data2, insert_data3, check_product, update_data, update_location, register_seller
-from wtforms import Form, PasswordField, validators, StringField, SubmitField
+from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
@@ -294,6 +294,11 @@ def wish_list():
     email = session['email']                                                                # 로그인 상태 이메일 가져오기
     likes_list = check_info2("likes", "user_list", "email", email)                                                   # 이메일에 저장된 likes 상품 번호$
     product_numbers = likes_list[0][0]                       # 2,7  (상품번호, 상품번호) 형식에서
+    if product_numbers == None:
+        product_list, likes_count_all = check_product()
+        n = len(product_list)
+        flash('등록된 상품이 없습니다.')
+        return redirect(url_for('home'))
     likes_product_number = product_numbers.split(',')
     n = len(likes_product_number)
     wish_list_products = []
@@ -303,13 +308,7 @@ def wish_list():
         flash('구매 진행')
         return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wishlist")
     else:
-        if product_numbers == None:
-            product_list, likes_count_all = check_product()
-            n = len(product_list)
-            flash('등록된 상품이 없습니다.')
-            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
-        else:
-            return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wishlist")
+        return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wishlist")
 
 @app.route("/product_details/<int:product_n>", methods=["GET", "POST"])              # 질문? layout 에서 자세히를 누를때 상품 번호가 주소에 포함되고 그 상품번호가 <int:product_n> 에 들어가짐
 @login_required
@@ -393,12 +392,14 @@ def location_track():
 
 
 class Delete_Form(Form):
-    submit = SubmitField('삭제')
+    accept = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.data_required()])
+    submit1 = SubmitField('삭제')
 
 @app.route("/board_update/<int:board_num>", methods=["GET", "POST"])
 def board_update(board_num):
-    form = Delete_Form(request.form)
+    del_form = Delete_Form(request.form)
     update_form = Update_Form(request.form)
+    print(del_form, update_form)
     board_list, board_count_number = get_board_list()
     board_num=board_num
     email = session['email']
@@ -409,11 +410,12 @@ def board_update(board_num):
         flash('권한 없음')
         return redirect(url_for('board_main'))
     if request.method == "GET":
-        return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number,i=number_index,title="board_update", update_form=update_form)
+        return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number,i=number_index,title="board_update", update_form=update_form, del_form=del_form)
     else:
         if request.method == "POST":
             board_num = str(board_num)   # 테이블 입력시 int 안됌
             if update_form.validate():
+                print('2')
                 title, content, pass_data = update_form.title.data, update_form.content.data, update_form.password.data   # 사용자 - 보드 일치 확인 필요 (이메일로 들어가므로 불필요?)
                 data = [title, content, board_num]
                 c, conn = connection()
@@ -422,8 +424,10 @@ def board_update(board_num):
                 conn.commit()
                 c.close()
                 conn.close()
+                flash("수정되었습니다.")
                 return redirect(url_for('board_main'))
-            else:  # 삭제
+            if del_form.validate():
+                print('1')
                 c, conn = connection()  # 함수 추가
                 c.execute("Delete FROM board WHERE board_n = (%s)", [thwart(board_num)])
                 conn.commit()
@@ -431,5 +435,11 @@ def board_update(board_num):
                 conn.close()
                 flash(board_num + '번 글 삭제되었습니다.')
                 return redirect(url_for('board_main'))
+            else:
+                print('3')
+                if request.method == "GET":
+                    return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number,
+                                        i=number_index, title="board_update", update_form=update_form, del_form=del_form)
+
 
 
