@@ -24,7 +24,7 @@
             내 정보
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {% if rank[0][0] == None %}
+            {% if rank == 0 or rank[0][0] == None: %}
             <form action="{{ url_for('home') }}" method="POST">
               <input class="dropdown-item" href="/register_product" type="submit" value="판매자등록" >
             </form>
@@ -71,7 +71,12 @@
       <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
         <div class="col p-4 d-flex flex-column position-static">
           <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}  </strong>
-          <h3 class="mb-0"></h3>
+          {% if p_list[i][5]: %}
+          <p class="mb-0">      판매자 : {{ p_list[i][5] }}</p>
+          {% else %}{% endif %}
+          {% if p_list[i][6]: %}
+          <p class="mb-0"> Tag number: {{ categories[p_list[i][6]] }}  </p>
+          {% else %}{% endif %}
           <p class="card-text mb-auto">상품 소개: {{ p_list[i][2] }}</p>
           <p></p>
           <p></p>

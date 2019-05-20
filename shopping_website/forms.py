@@ -1,4 +1,4 @@
-from wtforms import Form, PasswordField, validators, StringField, SubmitField, TextAreaField, FileField, BooleanField
+from wtforms import Form, PasswordField, validators, StringField, SubmitField, TextAreaField, FileField, BooleanField, SelectField
 from flask_wtf.file import FileAllowed, FileRequired
 
 class LoginForm(Form):
@@ -48,6 +48,7 @@ class LocationForm(Form):
 
 class ProductForm(Form):
     product_name = TextAreaField('Product Name', [validators.Length(min=1, max=20)])
+    product_tag = SelectField('Product Tag', choices=[('1','여성패션'), ('2','남성패션'), ('3','뷰티'), ('4','식품'), ('5','주방용품'), ('6','홈인테리어'), ('7','가전디지털'), ('8','자동차'), ('9','완구취미'), ('10','문구'), ('11','도서') ])
     product_intro = TextAreaField('Product Intro', [validators.Length(min=10, max=50)])
     product_pic = FileField('Product picture', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
     submit = SubmitField('okay')

@@ -25,6 +25,12 @@
           <strong class="d-inline-block mb-2 text-primary" name="product_name" value="product_name">{{ product_detail[1] }}</strong>
           <h3 class="mb-0"></h3>
           <div class="mb-1 text-muted">등록 날짜: </div>
+          {% if product_detail[5]: %}
+          <p class="mb-0">      판매자 : {{ product_detail[5] }}</p>
+          {% else %}{% endif %}
+          {% if product_detail[6]: %}
+          <p class="mb-0"> Tag number: {{ categories[product_detail[6]] }}  </p>
+          {% else %}{% endif %}
           <p class="card-text mb-auto">상품 소개: {{ product_detail[2] }}</p>
           <p></p>
           <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="장바구니">

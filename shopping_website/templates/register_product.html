@@ -4,6 +4,8 @@
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">상품을 등록해주세요.</legend>
             <div class="form-group">
+            <label for="exampleFormControlSelect1">상품 태그</label>
+                {{ form.product_tag(class="form-control") }}
                 {{ form.product_name.label(class="form-control-label") }}
                 {% if form.product_name.errors %}
                     {{ form.product_name(class="form-control form-control-lg is-invalid") }}

@@ -75,6 +75,16 @@ def insert_data(table_name, value1, value2, value3):
     c.close()
     conn.close()
 
+def insert_data1(table_name, value1, value2, value3, value4, value5):
+    c, conn = connection()
+    data = db_input(table_name, value1, value2, value3, value4, value5)
+    c.execute("set names utf8")  # db에 한글 저장
+    print(data)
+    c.execute("INSERT INTO "+data[0]+" (product_name, product_intro, filename, username, tag) VALUES (%s, %s, %s, %s, %s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4]), thwart(data[5])])
+    conn.commit()
+    c.close()
+    conn.close()
+
 def insert_data2(table_name, value1, value2, value3):
     c, conn = connection()
     data = db_input(table_name, value1, value2, value3)

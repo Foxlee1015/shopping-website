@@ -5,7 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, LikesForm, Register_seller_Form, Buy_Form, Location_track_Form, Update_Form
-from shopping_website.shop_methods import send_reset_email, check_info, check_info2, insert_data, insert_data2, insert_data3, check_product, update_data, update_location, register_seller
+from shopping_website.shop_methods import send_reset_email, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, register_seller
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -29,13 +29,10 @@ def Get_product_location(product_n):
         print(meaning)
         Get_product_location("6664503016753") # 운송장 번호 입력 (예로 6664503016753 )
 
-
-
-
-
-
-#layout list
-#Categories = ["여성패션", "남성패션", "뷰티", "식품", "주방용품", "생활용품"]   # html for loop? len=len(Categories), Categories=Categories)
+@app.context_processor
+def context_processor():
+    categories = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
+    return dict(categories=categories)
 
 @app.route("/")
 @app.route("/home", methods=["GET", "POST"])
@@ -55,7 +52,10 @@ def home():
             rank = check_info2("rank", "user_list", "email", email)
             return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
     except:
-        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
+        #return redirect(url_for('home'))
+        rank = 0
+        print(product_list)
+        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -264,7 +264,7 @@ def register_product():
         flash('판매자등록을 먼저 해주십시오')
         return redirect(url_for('home'))
     if request.method == "POST" :
-        product_name, product_intro = form.product_name.data, form.product_intro.data
+        product_name, product_intro, product_tag = form.product_name.data, form.product_intro.data, form.product_tag.data
         file = request.files['file']                  # post 된 파일 정보 가져옴
         if not file:                                  # 파일이 존재하지 않으면
             flash('no file')
@@ -279,13 +279,16 @@ def register_product():
             #output_size = (200,250)
             #file = Image.open(file)
             #file.thumbnail(output_size)
+            info_list =check_info("user_list", "email", email)
+            username = info_list[0][1]
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            insert_data("product_info", product_name, product_intro, filename)
+            insert_data1("product_info", product_name, product_intro, filename, username, product_tag)
             product_list, likes_count_all = check_product()                                         ## db에 저장된 테이블 리스트로 가져옴([1]이름,[2]설명,[3]파일이름)
             n = len(product_list)
-            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all)
+            return redirect(url_for('home'))
     else:
         return render_template("register_product.html", form=form)
+
 
 @app.route("/wish_list",  methods=["GET", "POST"] )
 @login_required
@@ -359,6 +362,7 @@ def product_details(product_n):
         for i in range(n):                                        # 해당 상품의 정보 가져오고(DB)
             if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보(DB)와 자세히 버튼을 누른 상품의 번호와 일치하면
                 product_detail = product_list[i]
+                print(product_detail)
         return render_template('product_list.html', product_detail=product_detail, title="product_datails")
 
 def Get_location_data(product_location_number):       #(운송장번호 입력) - 현재는 예제 622781895012
@@ -390,7 +394,6 @@ def location_track():
     else:
         return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
 
-
 class Delete_Form(Form):
     accept = BooleanField('I accept the Terms of Service and Privacy Notice (updated Jan 22, 2015)', [validators.data_required()])
     submit1 = SubmitField('삭제')
@@ -399,7 +402,6 @@ class Delete_Form(Form):
 def board_update(board_num):
     del_form = Delete_Form(request.form)
     update_form = Update_Form(request.form)
-    print(del_form, update_form)
     board_list, board_count_number = get_board_list()
     board_num=board_num
     email = session['email']
@@ -415,7 +417,6 @@ def board_update(board_num):
         if request.method == "POST":
             board_num = str(board_num)   # 테이블 입력시 int 안됌
             if update_form.validate():
-                print('2')
                 title, content, pass_data = update_form.title.data, update_form.content.data, update_form.password.data   # 사용자 - 보드 일치 확인 필요 (이메일로 들어가므로 불필요?)
                 data = [title, content, board_num]
                 c, conn = connection()
@@ -427,7 +428,6 @@ def board_update(board_num):
                 flash("수정되었습니다.")
                 return redirect(url_for('board_main'))
             if del_form.validate():
-                print('1')
                 c, conn = connection()  # 함수 추가
                 c.execute("Delete FROM board WHERE board_n = (%s)", [thwart(board_num)])
                 conn.commit()
@@ -436,7 +436,6 @@ def board_update(board_num):
                 flash(board_num + '번 글 삭제되었습니다.')
                 return redirect(url_for('board_main'))
             else:
-                print('3')
                 if request.method == "GET":
                     return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number,
                                         i=number_index, title="board_update", update_form=update_form, del_form=del_form)
