@@ -436,9 +436,7 @@ def board_update(board_num):
                 flash(board_num + '번 글 삭제되었습니다.')
                 return redirect(url_for('board_main'))
             else:
-                if request.method == "GET":
-                    return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number,
-                                        i=number_index, title="board_update", update_form=update_form, del_form=del_form)
+                return render_template("board_update.html", board_list=board_list, board_count_n=board_count_number, i=number_index, title="board_update", update_form=update_form, del_form=del_form)
 
 
 
@@ -446,6 +444,8 @@ def board_update(board_num):
 def product_tag(tag_num):
     tag_num=str(tag_num)
     tag_product = check_info("product_info", "tag", tag_num)
+    if tag_product == None:
+        return redirect(url_for('home'))
     product_list = tag_product
     n = len(product_list)
     likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
