@@ -31,7 +31,7 @@ def Get_product_location(product_n):
 
 @app.context_processor
 def context_processor():
-    categories = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
+    categories = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' '홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     return dict(categories=categories)
 
 @app.route("/")
@@ -442,3 +442,33 @@ def board_update(board_num):
 
 
 
+@app.route("/tag/<int:tag_num>", methods=["GET", "POST"])
+def product_tag(tag_num):
+    tag_num=str(tag_num)
+    tag_product = check_info("product_info", "tag", tag_num)
+    product_list = tag_product
+    n = len(product_list)
+    likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
+    for i in range(n):
+        x = tag_product[i][4]
+        if x != None:
+            likes_count = x.count(',') + 1
+            likes_count_all.append(likes_count)
+        else:
+            likes_count_all.append(0)
+    print(product_list, likes_count_all)
+    try:
+        form = Register_seller_Form(request.form)
+        email = session['email']
+        if request.method == "POST" and form.validate():
+            register_seller(email)
+            flash('판매자로 등록되셨습니다.')
+            rank = check_info2("rank", "user_list", "email", email)  # 등록된 후 rank 가져오기
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
+        else:
+            email = session['email']
+            rank = check_info2("rank", "user_list", "email", email)
+            return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
+    except:
+        rank = 0
+        return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank)
