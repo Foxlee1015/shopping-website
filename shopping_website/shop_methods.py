@@ -51,21 +51,29 @@ def check_info2(row, table_name, column, value):           #이메일 입력 -> 
     else:
         return None
 
-def check_product():
+def check_product(table_name):
+    """
+    테이블의 컬럼의 수 3개 이하인 경우 product_list[i][4] 에서 에러 발생 -> try, except 설정
+    :return:
+    """
     c, conn = connection()
     c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT * FROM product_info")
+    table_name = table_name
+    data = c.execute("SELECT * FROM "+table_name)
     product_list = c.fetchall()
     n = len(product_list)
-    likes_count_all = []  # 상품 정보에서 list에 포함된 사용자 uid 의 갯수를 ,  갯수로 파악해서 다른 리스트로 html 전달
-    for i in range(n):
-        x = product_list[i][4]
-        if x != None:
-            likes_count = x.count(',') + 1
-            likes_count_all.append(likes_count)
-        else:
-            likes_count_all.append(0)
-    return product_list, likes_count_all             # 상품정보(번호,이름,소개) , 좋아요 수 출력
+    likes_count_all = []
+    try:
+        for i in range(n):
+            x = product_list[i][4]
+            if x != None:
+                likes_count = x.count(',') + 1
+                likes_count_all.append(likes_count)
+            else:
+                likes_count_all.append(0)
+        return product_list, likes_count_all
+    except:
+        return product_list
 
 def insert_data(table_name, value1, value2, value3):
     c, conn = connection()
@@ -111,8 +119,13 @@ def update_data(table_name, column_name, column_value, row_name, row_value):
     c.close()
     conn.close()
 
-# update_data("user_list", "password", password, "email", email)
-#c.execute("UPDATE user_list SET password = (%s) WHERE email = (%s)", [thwart(password), thwart(email)])
+def delete_data(table_name, column_name, column_value):
+    c, conn = connection()  # 함수 추가
+    data = db_input(table_name, column_name, column_value)
+    c.execute("Delete FROM "+data[0]+" WHERE "+data[1]+"= (%s)", [thwart(data[2])])
+    conn.commit()
+    c.close()
+    conn.close()
 
 def update_location(address,zipcode,phonenumber,email):
     c, conn = connection()

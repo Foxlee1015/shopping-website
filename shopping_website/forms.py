@@ -40,7 +40,7 @@ class LocationForm(Form):
 
 class ProductForm(Form):
     product_name = TextAreaField('Product Name', [validators.Length(min=1, max=20)])
-    product_tag = SelectField('Product Tag', choices=[('1','여성패션'), ('2','남성패션'), ('3','뷰티'), ('4','식품'), ('5','주방용품'), ('6','주방용품'), ('7','홈인테리어'), ('8','가전디지털'), ('9','자동차'), ('10','완구취미'), ('11','문구'), ('12','도서') ])
+    product_tag = SelectField('Product Tag', choices=[('1','여성패션'), ('2','남성패션'), ('3','뷰티'), ('4','식품'), ('5','주방용품'), ('6','생활용품'), ('7','홈인테리어'), ('8','가전디지털'), ('9','자동차'), ('10','완구취미'), ('11','문구'), ('12','도서') ])
     product_intro = TextAreaField('Product Intro', [validators.Length(min=10, max=50)])
     product_pic = FileField('Product picture', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
     submit = SubmitField('okay')

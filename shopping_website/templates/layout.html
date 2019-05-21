@@ -60,11 +60,80 @@
       <a class="p-2 text-muted" href="/tag/12">도서</a>
     </nav>
   </div>
-    <!--
-  <div class="jumbotron p-4 p-md-5 text-white rounded bg-dark">
-      <img id ="introImg" border="0">
-      <div class="col-md-6 px-0"></div>
-  </div>-->
+  <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+    <ol class="carousel-indicators">
+      {% if tag_num: %}
+      {% else %}
+      <li data-target="#carouselExampleIndicators" data-slide-to="1" class="active"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="4"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="5"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="6"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="7"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="8"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="9"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="10"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="11"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="12"></li>
+      {% endif %}
+    </ol>
+    <div class="carousel-inner">
+      {% if tag_num: %}
+      <div class="carousel-item active">
+        <a  href="/tag/{{tag_num}}"><img src="../static/images/{{tag_num}}.png" class="d-block w-100" alt="{{tag_num}}"></a>
+      </div>
+      {% else %}
+      <div class="carousel-item active">
+        <a  href="/tag/1"><img src="../static/images/1.png" class="d-block w-100" alt="1", title="여성패션"></a>
+        </div>
+      <div class="carousel-item">
+        <a  href="/tag/2"><img src="../static/images/2.png" class="d-block w-100" alt="2", title="남성패션"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/3"><img src="../static/images/3.png" class="d-block w-100" alt="3", title="뷰티"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/4"><img src="../static/images/4.png" class="d-block w-100" alt="4", title="식품"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/5"><img src="../static/images/5.png" class="d-block w-100" alt="5", title="주방용품"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/6"><img src="../static/images/6.png" class="d-block w-100" alt="6", title="생활용품"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/7"><img src="../static/images/7.png" class="d-block w-100" alt="7", title="홈인테리어"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/8"><img src="../static/images/8.png" class="d-block w-100" alt="8", title="가전디지털"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/9"><img src="../static/images/9.png" class="d-block w-100" alt="9", title="자동차"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/10"><img src="../static/images/10.png" class="d-block w-100" alt="10", title="완구취미"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/11"><img src="../static/images/11.png" class="d-block w-100" alt="11", title="문구"></a>
+      </div>
+      <div class="carousel-item">
+        <a  href="/tag/12"><img src="../static/images/12.png" class="d-block w-100" alt="12", title="도서"></a>
+      </div>
+      {% endif %}
+    </div>
+    {% if tag_num: %}
+    {% else %}
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+    {% endif %}
+  </div>
   <div class="row mb-2"> <!--상품 포스트 container 시작-->
     {% for i in range(n) %}
     <div class="col-md-6"> <!--상품 포스트 1 시작-->
@@ -75,7 +144,7 @@
           <p class="mb-0">      판매자 : {{ p_list[i][5] }}</p>
           {% else %}{% endif %}
           {% if p_list[i][6]: %}
-          <p class="mb-0"> Tag number: {{ categories[p_list[i][6]] }}  </p>
+          <p class="mb-0"> Tag: {{ p_list[i][6] }} {{ categories[p_list[i][6]] }}  </p>
           {% else %}{% endif %}
           <p class="card-text mb-auto">상품 소개: {{ p_list[i][2] }}</p>
           <p></p>
