@@ -25,14 +25,6 @@ class ResetPasswordForm(Form):
     submit = SubmitField('Reset Password')
 
 class BoardForm(Form):
-    title = TextAreaField('Title', [validators.Length(min=1, max=20)])
-    content = TextAreaField('Content', [validators.Length(min=10, max=50)])
-    password = PasswordField('Password', [validators.data_required(),
-                                          validators.EqualTo('confirm', message='Passwords must match')])
-    confirm = PasswordField('Repeat Password')
-    submit = SubmitField('ok')
-
-class Update_Form(Form):
     title = TextAreaField('Title', [validators.data_required(), validators.Length(min=1, max=20)])
     content = TextAreaField('Content', [validators.data_required(), validators.Length(min=1, max=50)])
     password = PasswordField('Password', [validators.data_required(),
@@ -53,18 +45,13 @@ class ProductForm(Form):
     product_pic = FileField('Product picture', validators=[FileRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
     submit = SubmitField('okay')
 
-class LikesForm(Form):
-    submit = SubmitField('장바구니')
+class Delete_Form(Form):
+    accept = BooleanField('I agree to delete this.', [validators.data_required()])
+    submit1 = SubmitField('삭제')
 
-class Register_seller_Form(Form):
-    submit = SubmitField('판매자등록')
-
-class Buy_Form(Form):
-    submit = SubmitField('구매하기')
+class Submit_Form(Form):
+    submit = SubmitField('Okay')
 
 class Location_track_Form(Form):
     submit = SubmitField('배송조회')
 
-class Delete_Form(Form):
-    #accept = BooleanField('Do you really want to delete this?', [validators.data_required()])
-    submit1 = SubmitField('배송조회')

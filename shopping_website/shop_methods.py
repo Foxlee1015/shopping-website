@@ -34,6 +34,8 @@ def check_info(table_name, column, value):
         return info_list
     else:
         return None
+# c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_number)])
+# check_info("board", "board_n", count_number)
 
 def check_info2(row, table_name, column, value):           #이메일 입력 -> 비밀번호 출력
     c, conn = connection()
@@ -65,7 +67,6 @@ def check_product():
             likes_count_all.append(0)
     return product_list, likes_count_all             # 상품정보(번호,이름,소개) , 좋아요 수 출력
 
-
 def insert_data(table_name, value1, value2, value3):
     c, conn = connection()
     data = db_input(table_name, value1, value2, value3)
@@ -79,7 +80,6 @@ def insert_data1(table_name, value1, value2, value3, value4, value5):
     c, conn = connection()
     data = db_input(table_name, value1, value2, value3, value4, value5)
     c.execute("set names utf8")  # db에 한글 저장
-    print(data)
     c.execute("INSERT INTO "+data[0]+" (product_name, product_intro, filename, username, tag) VALUES (%s, %s, %s, %s, %s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4]), thwart(data[5])])
     conn.commit()
     c.close()
@@ -102,7 +102,6 @@ def insert_data3(email,address,zipcode,phonenumber):
     c.close()
     conn.close()
 
-
 def update_data(table_name, column_name, column_value, row_name, row_value):
     c, conn = connection()
     data = db_input(table_name, column_name, column_value, row_name, row_value)
@@ -112,14 +111,8 @@ def update_data(table_name, column_name, column_value, row_name, row_value):
     c.close()
     conn.close()
 
-def register_seller(email):
-    c, conn = connection()
-    x = "1" # 판매자 rank = 1, 일반등록자는 none
-    c.execute("set names utf8")  # db에 한글 저장
-    c.execute("UPDATE user_list SET rank=%s WHERE email=%s", [thwart(x), thwart(email)])
-    conn.commit()
-    c.close()
-    conn.close()
+# update_data("user_list", "password", password, "email", email)
+#c.execute("UPDATE user_list SET password = (%s) WHERE email = (%s)", [thwart(password), thwart(email)])
 
 def update_location(address,zipcode,phonenumber,email):
     c, conn = connection()
