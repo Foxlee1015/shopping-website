@@ -135,3 +135,22 @@ def update_location(address,zipcode,phonenumber,email):
     c.close()
     conn.close()
 
+def update_product(product_name,produc_intro,filename,username):
+    c, conn = connection()
+    data = db_input(product_name,produc_intro,filename,username)
+    c.execute("set names utf8")  # 배송 정보 한글 저장.
+    c.execute("UPDATE product_info SET product_name=(%s), product_intro=(%s), filename=(%s)  WHERE username=(%s)", [thwart(data[0]), thwart(data[1]), thwart(data[2]), thwart(data[3])])
+    conn.commit()
+    c.close()
+    conn.close()
+
+
+def update_info(tablename, product_name,product_intro,filename,username):
+    c, conn = connection()
+    data = db_input(tablename, product_name,product_intro,filename,username)
+    c.execute("set names utf8")  # 배송 정보 한글 저장.
+    c.execute("UPDATE "+data[0]+" SET product_name=(%s), product_intro=(%s), filename=(%s)  WHERE username=(%s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4])])
+    conn.commit()
+    c.close()
+    conn.close()
+

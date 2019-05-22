@@ -5,7 +5,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
 from shopping_website import app, mail
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
-from shopping_website.shop_methods import send_reset_email, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data
+from shopping_website.shop_methods import update_info, send_reset_email, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -325,10 +325,18 @@ def product_details(product_n):
     email = session['email']
     product_list, likes_count_all = check_product("product_info")
     n= len(product_list)
+    info_list = check_info("user_list", "email", email)
+    username_email = info_list[0][1]
+    product_n = str(product_n)
+    product_info = check_info("product_info", "product_n", product_n)
+    username_product = product_info[0][5]
+    if username_email == username_product:
+        datamacth = True
+    if username_email != username_product:
+        datamacth = False
     if request.method == "POST":
         info_list =check_info("user_list", "email", email)
         uid = str(info_list[0][0])
-        product_n = str(product_n)
         product_likes_list = check_info2("likes", "product_info", "product_n", product_n)
         product_uid_list = product_likes_list[0][0]
         if 1:  # 좋아요 db에 추가
@@ -368,7 +376,7 @@ def product_details(product_n):
             if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보(DB)와 자세히 버튼을 누른 상품의 번호와 일치하면
                 product_detail = product_list[i]
                 print(product_detail)
-        return render_template('product_list.html', product_detail=product_detail, title="product_datails")
+        return render_template('product_list.html', product_detail=product_detail, title="product_datails", datamacth=datamacth)
 
 def Get_location_data(product_location_number):       #(운송장번호 입력) - 현재는 예제 622781895012
         with urllib.request.urlopen("https://dictionary.cambridge.org/dictionary/english/" + verb) as response:
@@ -471,3 +479,43 @@ def product_tag(tag_num):
     except:
         rank = 0
         return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count_all, rank=rank, tag_num=tag_num)
+
+@app.route("/product_update/<int:product_n>", methods=["GET", "POST"])
+def product_update(product_n):
+    """
+    """
+    random_hex = secrets.token_hex(8)
+    del_form = Delete_Form(request.form)
+    update_form = ProductForm(request.form)
+    product_n, product_str_n = product_n, str(product_n)
+    product_list = check_info("product_info", "product_n", product_str_n)
+    email = session['email']
+    if request.method == "POST":
+        if update_form.validate():
+            product_name, product_intro, product_tag = update_form.product_name.data, update_form.product_intro.data, update_form.product_tag.data
+            file = request.files['file']  # post 된 파일 정보 가져옴
+            if not file or file.filename == "":  # 파일이 존재하지 않으면
+                flash('Check your file')
+                return redirect(url_for('home'))
+            else:
+                filename = secure_filename(file.filename)
+                filename = random_hex + filename
+                # 사이즈 조절
+                # output_size = (200,250)
+                # file = Image.open(file)
+                # file.thumbnail(output_size)
+                info_list = check_info("user_list", "email", email)
+                username = info_list[0][1]
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                update_info("product_info", product_name, product_intro, filename, username)
+                flash('상품 정보가 수정되었습니다.')
+                return redirect(url_for('home'))
+        if del_form.validate():
+            delete_data("product_info", "product_n", product_str_n)
+            flash('글이 삭제되었습니다.')
+            return redirect(url_for('home'))
+        else:
+            return redirect(url_for('home'))
+    else:
+        print('d')
+        return render_template("update_product.html", product_list=product_list, title="update", update_form=update_form, del_form=del_form)

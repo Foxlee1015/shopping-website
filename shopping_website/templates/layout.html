@@ -12,7 +12,12 @@
     };
     </script>
   </head>
+  {% if tag_num: %}
   <body onload="bottom_new('bottom');">
+  {% else %}
+  <body>
+  {% endif %}
+  <!---->
   <div class="container">
   <header class="blog-header py-3">
     <div class="row flex-nowrap justify-content-between align-items-center">
