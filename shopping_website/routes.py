@@ -1,9 +1,10 @@
 import os
 import secrets
-import datetime
+from datetime import datetime, date, time
+from flask_babel import Babel, format_date, gettext
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
-from shopping_website import app, mail
+from shopping_website import app, mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
 from shopping_website.shop_methods import update_info, send_reset_email, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
@@ -17,7 +18,46 @@ from werkzeug.utils import secure_filename
 from flask_mail import Message
 from bs4 import BeautifulSoup
 import urllib.request
+from babel import numbers, dates
 
+
+@babel.localeselector
+def get_locale():
+    return 'ko'
+    #return request.accept_languages.best(['en', 'ko'])  # 사용자의 위치에 따라 언어 바뀜(best, 가능한 옵션중(나의 경우. 영어, 한국어)
+
+
+@app.route("/babel_test")
+@app.route("/bt", methods=["GET", "POST"])
+def babel_test():
+
+    a = gettext('AAA')
+
+
+    n = 11111
+    us_n = numbers.format_decimal(n, locale='en_US')      # locale 필요한 것 babel
+    kr_n = numbers.format_decimal(n, locale='ko_KR')
+    se_n = numbers.format_decimal(n, locale='sv_SE')
+
+    d = date(2007, 4, 1)
+
+    us_d = dates.format_date(d, locale='en_US')
+    kr_d = dates.format_date(d, locale='ko_KR')
+    se_d = dates.format_date(d, locale='sv_SE')
+
+    test_d = format_date(d)  # flask_babel 기능 get_locale 에서 locale을  return defualt 로 설정
+
+
+
+    dt = datetime(2008, 8, 3, 15, 30)
+
+    us_dt = dates.format_date(dt, locale='en_US')
+    kr_dt = dates.format_date(dt, locale='ko_KR')
+    se_dt = dates.format_date(dt, locale='sv_SE')
+
+    results = {'us_n' : us_n, 'kr_n' : kr_n, 'se_n' : se_n, 'us_d' : us_d, 'kr_d' : kr_d, 'se_d' : se_d, 'us_dt' : us_dt, 'kr_dt' : kr_dt, 'se_dt' : se_dt, 'test_d' : test_d }
+
+    return render_template('babel.html', results=results)
 
 
 def Get_product_location(product_n):

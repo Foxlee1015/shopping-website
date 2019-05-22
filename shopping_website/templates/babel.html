@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop-Babel</title>
+</head>
+<body>
+<p>한글</p>
+<p>영어</p>
+
+<p>Computer : {{ _('Computer') }}</p>   <!-- _()   앞 _ 는 gettext 함수-->
+
+<p>한국 시간 : {{ results['kr_n'] }} / {{ results['kr_d'] }} / {{ results['kr_dt'] }}</p>
+<p>미국 시간 : {{ results['us_n'] }} / {{ results['us_d'] }} / {{ results['us_dt'] }}</p>
+<p>SE 시간 : {{ results['se_n'] }} / {{ results['se_d'] }} / {{ results['se_dt'] }}</p>
+<p>{{ results['test_d'] }} </p>
+</body>
+</html>
