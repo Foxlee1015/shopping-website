@@ -33,10 +33,11 @@
           {% else %}{% endif %}
           <p class="card-text mb-auto">상품 소개: {{ product_detail[2] }}</p>
           <p></p>
-          <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="장바구니">
-          {% if datamacth == True %}
+          {% if datamatch == True %}
           <a class="login__button login__button--submit _loginSubmitButton" href="/product_update/{{product_detail[0]}}">수정 및 삭제</a>
-          {% else %}{% endif %}
+          {% else %}
+          <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="장바구니">
+          {% endif %}
           <p></p>
         </div>
         <div class="col-auto d-none d-lg-block">

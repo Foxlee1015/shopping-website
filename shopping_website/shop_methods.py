@@ -145,11 +145,11 @@ def update_product(product_name,produc_intro,filename,username):
     conn.close()
 
 
-def update_info(tablename, product_name,product_intro,filename,username):
+def update_info(tablename, product_name,product_intro,filename, product_n):
     c, conn = connection()
-    data = db_input(tablename, product_name,product_intro,filename,username)
+    data = db_input(tablename, product_name,product_intro,filename, product_n)
     c.execute("set names utf8")  # 배송 정보 한글 저장.
-    c.execute("UPDATE "+data[0]+" SET product_name=(%s), product_intro=(%s), filename=(%s)  WHERE username=(%s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4])])
+    c.execute("UPDATE "+data[0]+" SET product_name=(%s), product_intro=(%s), filename=(%s)  WHERE product_n=(%s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4])])
     conn.commit()
     c.close()
     conn.close()

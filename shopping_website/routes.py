@@ -331,9 +331,9 @@ def product_details(product_n):
     product_info = check_info("product_info", "product_n", product_n)
     username_product = product_info[0][5]
     if username_email == username_product:
-        datamacth = True
+        datamatch = True
     if username_email != username_product:
-        datamacth = False
+        datamatch = False
     if request.method == "POST":
         info_list =check_info("user_list", "email", email)
         uid = str(info_list[0][0])
@@ -376,7 +376,7 @@ def product_details(product_n):
             if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보(DB)와 자세히 버튼을 누른 상품의 번호와 일치하면
                 product_detail = product_list[i]
                 print(product_detail)
-        return render_template('product_list.html', product_detail=product_detail, title="product_datails", datamacth=datamacth)
+        return render_template('product_list.html', product_detail=product_detail, title="product_datails", datamatch=datamatch)
 
 def Get_location_data(product_location_number):       #(운송장번호 입력) - 현재는 예제 622781895012
         with urllib.request.urlopen("https://dictionary.cambridge.org/dictionary/english/" + verb) as response:
@@ -504,18 +504,26 @@ def product_update(product_n):
                 # output_size = (200,250)
                 # file = Image.open(file)
                 # file.thumbnail(output_size)
-                info_list = check_info("user_list", "email", email)
-                username = info_list[0][1]
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                update_info("product_info", product_name, product_intro, filename, username)
+                update_info("product_info", product_name, product_intro, filename, product_str_n)
                 flash('상품 정보가 수정되었습니다.')
                 return redirect(url_for('home'))
         if del_form.validate():
             delete_data("product_info", "product_n", product_str_n)
             flash('글이 삭제되었습니다.')
+            likes_list = check_info2("likes", "user_list", "email", email) # 기존 유저의 likes 리스트에서 제거된 상품번호 제거
+            update_list = likes_list[0][0].split(',')
+            update_list.remove(product_str_n)
+            n = len(update_list)
+            wish_list_products = ""
+            for i in range(n):
+                wish_list_products += update_list[i] +','
+            wish_list_products = wish_list_products[0:-1] #마지막 , 제거
+            update_data("user_list", "likes", wish_list_products, "email", email)  # 수정된 likes 리스트 업데이트
             return redirect(url_for('home'))
         else:
+            flash('에러발생')
             return redirect(url_for('home'))
     else:
-        print('d')
+        #print('d')
         return render_template("update_product.html", product_list=product_list, title="update", update_form=update_form, del_form=del_form)

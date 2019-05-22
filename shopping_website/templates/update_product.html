@@ -37,18 +37,20 @@
                 {% if update_form.product_pic.errors %}
                     {{ update_form.product_pic(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                        {% for error in form.product_pic.errors %}
+                        {% for error in update_form.product_pic.errors %}
                             <span>{{ error }}</span>
                         {% endfor %}
                     </div>
                 {% else %}
-                <p><input type=file name=file value="{{request.form.product_pic}}"></p>   <!-- request.update_form.~ 에러발생 form 이름 변경 없이 사용 -->
+                <p><input type=file name=file value="{{request.form.product_pic}}">     <!-- request.update_form.~  -->
+                  </p>
                 {% endif %}
             </div>
 
         </fieldset>
         <div class="login__content login__content--trigger">
             {{ update_form.submit(class="btn btn-sm btn-outline-secondary", type="submit", value="Update") }}
+          <!--<input class="login__button login__button--submit _loginSubmitButton" type="submit" value="okay">-->
         </div>
 
     </form>
