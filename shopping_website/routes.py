@@ -217,10 +217,7 @@ def board_page():
 
 @app.route('/board', methods=["GET","POST"])
 def board_main():
-    c, conn = connection()
-    c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT * FROM board")
-    board_list = c.fetchall()
+    board_list = check_product("board")
     board_count_number = len(board_list)
     return render_template("board_main.html", board_list=board_list, board_count_n=board_count_number, title="board")
 
