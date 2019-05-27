@@ -19,7 +19,7 @@ from flask_mail import Message
 from bs4 import BeautifulSoup
 import urllib.request
 from babel import numbers, dates
-
+import re
 
 @babel.localeselector
 def get_locale():
@@ -27,45 +27,36 @@ def get_locale():
     #return request.accept_languages.best(['en', 'ko'])  # 사용자의 위치에 따라 언어 바뀜(best, 가능한 옵션중(나의 경우. 영어, 한국어)
 
 
-@app.route("/babel_test")
-@app.route("/bt", methods=["GET", "POST"])
-def babel_test():
-
-    a = gettext('AAA')
-
-
-    n = 11111
-    us_n = numbers.format_decimal(n, locale='en_US')      # locale 필요한 것 babel
-    kr_n = numbers.format_decimal(n, locale='ko_KR')
-    se_n = numbers.format_decimal(n, locale='sv_SE')
-
-    d = date(2007, 4, 1)
-
-    us_d = dates.format_date(d, locale='en_US')
-    kr_d = dates.format_date(d, locale='ko_KR')
-    se_d = dates.format_date(d, locale='sv_SE')
-
-    test_d = format_date(d)  # flask_babel 기능 get_locale 에서 locale을  return defualt 로 설정
-
-
-
-    dt = datetime(2008, 8, 3, 15, 30)
-
-    us_dt = dates.format_date(dt, locale='en_US')
-    kr_dt = dates.format_date(dt, locale='ko_KR')
-    se_dt = dates.format_date(dt, locale='sv_SE')
-
-    results = {'us_n' : us_n, 'kr_n' : kr_n, 'se_n' : se_n, 'us_d' : us_d, 'kr_d' : kr_d, 'se_d' : se_d, 'us_dt' : us_dt, 'kr_dt' : kr_dt, 'se_dt' : se_dt, 'test_d' : test_d }
-
-    return render_template('babel.html', results=results)
-
 
 def Get_product_location(product_n):
-    with urllib.request.urlopen("http://service.epost.go.kr/trace.RetrieveRegiPrclDeliv.postal?sid1="+product_n) as response:
+    with urllib.request.urlopen("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1="+product_n) as response:
         html = response.read()
         soup = BeautifulSoup(html, 'html.parser')
-        meaning = soup.find('div', {'id':'print'})
-        Get_product_location("6664503016753") # 운송장 번호 입력 (예로 6664503016753 )
+        table = soup.find('table', {'class':'table_col detail_off'})
+        #meaning = meaning.get_text()
+        data = [["   일  자   ", "   시  간   ", "   위  치   ", "   상  태   "]]
+        #print(table)
+        for tr in table.find_all('tr'):
+            tds = list(tr.find_all('td'))
+            data_1 = []
+            for td in tds:
+                x = td.text
+                x = x.replace("\n", "")
+                x = x.replace("\t", "")
+                x = x.replace("\xa0", "")
+                x = x.replace(" ", "")
+                print(x, '?!?')
+                data_1.append(x)
+            data.append(data_1)
+        #for i in range(len(data)):
+            #print(data[i])
+        #print(data)
+        #print(meaning)
+        return data
+
+Get_product_location("6099732777648")
+
+
 
 @app.context_processor
 def context_processor():
@@ -441,8 +432,8 @@ def location_track():
     for i in range(n):
         list.append(check_info("product_info", "product_n", likes_product_number[i]))
     if request.method == "POST":
-        Get_location_data()
-        return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
+        track = Get_product_location("6099732777648")
+        return render_template('location_track.html', n=n, wish_list_products=list, title="location_track", track=track, m=len(track))
     else:
         return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
 
