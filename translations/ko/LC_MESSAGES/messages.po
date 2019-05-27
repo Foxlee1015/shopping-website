@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-05-22 10:33-0700\n"
-"PO-Revision-Date: 2019-05-22 10:40-0700\n"
+"POT-Creation-Date: 2019-05-26 18:51-0700\n"
+"PO-Revision-Date: 2019-05-26 18:25-0700\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ko\n"
 "Language-Team: ko <LL@li.org>\n"
@@ -18,11 +18,278 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: routes.py:33
-msgid "AAA"
-msgstr " 에이에이"
+#: routes.py:44 templates/layout.html:70 templates/product_list.html:5
+msgid "female"
+msgstr "여성패션"
+
+#: routes.py:44 templates/layout.html:71 templates/product_list.html:6
+msgid "male"
+msgstr "남성 패션"
+
+#: routes.py:44 templates/layout.html:72 templates/product_list.html:7
+msgid "beauty"
+msgstr "미용"
+
+#: routes.py:44 templates/layout.html:73 templates/product_list.html:8
+msgid "food"
+msgstr "식품"
+
+#: routes.py:44 templates/layout.html:74 templates/product_list.html:9
+msgid "kitchen"
+msgstr "주방"
+
+#: routes.py:44 templates/layout.html:75 templates/product_list.html:10
+msgid "home tools"
+msgstr "생활용품"
+
+#: routes.py:44 templates/layout.html:76 templates/product_list.html:11
+msgid "home design"
+msgstr "홈인테리어"
+
+#: routes.py:44 templates/layout.html:77 templates/product_list.html:12
+msgid "device"
+msgstr "가전 디지털"
+
+#: routes.py:44 templates/layout.html:78 templates/product_list.html:13
+msgid "car"
+msgstr "자동차"
+
+#: routes.py:44 templates/layout.html:79 templates/product_list.html:14
+msgid "hobby"
+msgstr "취미"
+
+#: routes.py:44 templates/layout.html:80 templates/product_list.html:15
+msgid "stationary"
+msgstr "문구"
+
+#: routes.py:44 templates/layout.html:81 templates/product_list.html:16
+msgid "book"
+msgstr "책"
+
+#: routes.py:98
+msgid "engjoy shopping"
+msgstr "즐거운 쇼핑 되십시오"
+
+#: routes.py:177
+msgid "Check your password"
+msgstr "비밀번호를 확인해주세요"
+
+#: routes.py:180
+msgid "This email doesnt exist"
+msgstr "이메일이 존재하지 않습니다."
+
+#: routes.py:185
+msgid "Success"
+msgstr "성공"
+
+#: routes.py:204
+msgid "You have been logged out!"
+msgstr "로그아웃"
+
+#: routes.py:220
+msgid "님 빠른 시일 내에 연락드리겠습니다."
+msgstr "님 빠른 시일 내에 연락드리겠습니다."
+
+#: routes.py:224
+msgid "Wrong password"
+msgstr "비밀번호를 확인해주세요"
+
+#: routes.py:253
+msgid "배송지 업데이트에 성공했습니다."
+msgstr "배송지 업데이트에 서공했습니다."
+
+#: routes.py:285 routes.py:507 templates/layout.html:50
+msgid "rg_seller"
+msgstr "판매자등록"
+
+#: routes.py:291
+msgid "Upload a file or Check your file"
+msgstr "파일을 확인해주세요"
+
+#: routes.py:304
+msgid "success"
+msgstr "성공"
+
+#: routes.py:324
+msgid "등록된 상품이 없습니다."
+msgstr "등록도니 상품이 없습니다."
+
+#: routes.py:332
+msgid "구매 진행"
+msgstr "구매 진행"
+
+#: routes.py:377 routes.py:387
+msgid "added"
+msgstr "추가되었습니다."
+
+#: routes.py:380
+msgid "already in a cart"
+msgstr "이미 장바구니에 있습니다."
+
+#: routes.py:458
+msgid "권한 없음"
+msgstr "권한 없음"
+
+#: routes.py:474
+msgid "수정되었습니다."
+msgstr "수정되었습니다."
+
+#: routes.py:478
+msgid "번 글 삭제되었습니다."
+msgstr "번 글 삭제되었습니다."
+
+#: routes.py:544
+msgid "상품 정보가 수정되었습니다."
+msgstr "상품 정보가 수정되었습니다."
+
+#: routes.py:548
+msgid "글이 삭제되었습니다."
+msgstr "글이 삭제되었습니다."
 
 #: templates/babel.html:11
-msgid "Computer"
-msgstr "컴퓨터"
+msgid "Com"
+msgstr ""
+
+#: templates/board_main.html:7
+msgid "number"
+msgstr "번호"
+
+#: templates/board_main.html:8
+msgid "title"
+msgstr "제목"
+
+#: templates/board_main.html:9
+msgid "email"
+msgstr "이메일"
+
+#: templates/board_main.html:18 templates/product_list.html:38
+msgid "update and delete"
+msgstr "수정 및 삭제"
+
+#: templates/board_main.html:33
+msgid "write"
+msgstr "글쓰기"
+
+#: templates/board_write.html:62 templates/mypage.html:47
+msgid "submit"
+msgstr "확인"
+
+#: templates/layout.html:24 templates/layout_2.html:36
+msgid "home"
+msgstr "처음으로"
+
+#: templates/layout.html:34
+msgid "language"
+msgstr "언어"
+
+#: templates/layout.html:37
+msgid "lang1"
+msgstr "영어"
+
+#: templates/layout.html:38
+msgid "lang2"
+msgstr "한국어"
+
+#: templates/layout.html:45 templates/layout.html:56 templates/layout_2.html:47
+#: templates/layout_2.html:52
+msgid "mypage"
+msgstr "나의정보"
+
+#: templates/layout.html:53 templates/layout_2.html:50
+msgid "sell"
+msgstr "판매하기"
+
+#: templates/layout.html:55 templates/layout_2.html:51
+#: templates/wishlist.html:5
+msgid "wishlist"
+msgstr "장바구니"
+
+#: templates/layout.html:57 templates/layout_2.html:53
+msgid "Q & A"
+msgstr "질의응답"
+
+#: templates/layout.html:60 templates/layout_2.html:56
+msgid "logout"
+msgstr "로그아웃"
+
+#: templates/layout.html:62 templates/login.html:46
+msgid "login"
+msgstr "로그인"
+
+#: templates/layout.html:63 templates/login.html:49
+msgid "signup"
+msgstr "회원가입"
+
+#: templates/layout.html:170
+msgid "seller"
+msgstr "판매자"
+
+#: templates/layout.html:175 templates/product_list.html:34
+msgid "intro"
+msgstr "소개"
+
+#: templates/layout.html:178
+msgid "likes"
+msgstr "좋아요"
+
+#: templates/layout.html:179
+msgid "quick look"
+msgstr "자세히"
+
+#: templates/layout.html:199 templates/layout_2.html:76
+#: templates/layout_2.html:78 templates/register_product.html:52
+msgid "okay"
+msgstr "확인"
+
+#: templates/location_track.html:5
+msgid "purchase"
+msgstr "구매하기"
+
+#: templates/location_track.html:9 templates/wishlist.html:9
+msgid "product_number"
+msgstr "상품 번호"
+
+#: templates/location_track.html:10 templates/wishlist.html:10
+msgid "product_name"
+msgstr "상품 이름"
+
+#: templates/location_track.html:11 templates/wishlist.html:11
+msgid "product_intro"
+msgstr "상품 소개"
+
+#: templates/location_track.html:25
+msgid "track my order"
+msgstr "배송 추적"
+
+#: templates/login.html:62
+msgid "Forgot Password"
+msgstr "비밀번호를 잊어버리셨나요"
+
+#: templates/mypage.html:5
+msgid "register your address"
+msgstr "주소 등록"
+
+#: templates/product_list.html:29
+msgid "sellser"
+msgstr "판매자"
+
+#: templates/product_list.html:40
+msgid "add to cart"
+msgstr "장바구니에 넣기"
+
+#: templates/register_product.html:5
+msgid "register a product"
+msgstr "상품 등록"
+
+#: templates/register_product.html:7
+msgid "tag"
+msgstr "태그"
+
+#: templates/wishlist.html:25
+msgid "buy"
+msgstr "구매하기"
+
+#: templates/wishlist.html:28
+msgid "check my order"
+msgstr "주문 확인"
 

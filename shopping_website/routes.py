@@ -33,9 +33,7 @@ def Get_product_location(product_n):
         html = response.read()
         soup = BeautifulSoup(html, 'html.parser')
         table = soup.find('table', {'class':'table_col detail_off'})
-        #meaning = meaning.get_text()
-        data = [["   일  자   ", "   시  간   ", "   위  치   ", "   상  태   "]]
-        #print(table)
+        data = []
         for tr in table.find_all('tr'):
             tds = list(tr.find_all('td'))
             data_1 = []
@@ -48,13 +46,9 @@ def Get_product_location(product_n):
                 print(x, '?!?')
                 data_1.append(x)
             data.append(data_1)
-        #for i in range(len(data)):
-            #print(data[i])
-        #print(data)
-        #print(meaning)
         return data
 
-Get_product_location("6099732777648")
+#Get_product_location("6099732777648")
 
 
 
