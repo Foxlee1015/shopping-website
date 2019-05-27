@@ -27,6 +27,16 @@ def get_locale():
     #return request.accept_languages.best(['en', 'ko'])  # 사용자의 위치에 따라 언어 바뀜(best, 가능한 옵션중(나의 경우. 영어, 한국어)
 
 
+def Get_ip_loca():
+    ip=request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    with urllib.request.urlopen("https://geoip-db.com/jsonp/"+ip) as response:
+        html = response.read()
+        soup = BeautifulSoup(html, 'html.parser')
+        soup=str(soup)
+        data = soup[9:-1]  # 딕셔너리로 변경하기 위해 불필요한 데이터 제거
+        data = data.replace('null','None')
+        data_dic = eval(data) # 딕셔너리로 변경
+        return data_dic['city'], data_dic['state'], ip
 
 def Get_product_location(product_n):
     with urllib.request.urlopen("https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1="+product_n) as response:
@@ -47,10 +57,6 @@ def Get_product_location(product_n):
                 data_1.append(x)
             data.append(data_1)
         return data
-
-#Get_product_location("6099732777648")
-
-
 
 @app.context_processor
 def context_processor():
@@ -79,8 +85,9 @@ def home():
             rank = check_info2("rank", "user_list", "email", email)
             return render_template('home.html', rank=rank)
     except:
+        city, state, ip = Get_ip_loca()
         rank = 0
-        return render_template ('home.html', rank=rank)
+        return render_template ('home.html', rank=rank, city=city, ip=ip)
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
@@ -403,16 +410,6 @@ def product_details(product_n):
                 print(product_detail)
         return render_template('product_list.html', product_detail=product_detail, title="product_datails", datamatch=datamatch)
 
-def Get_location_data(product_location_number):       #(운송장번호 입력) - 현재는 예제 622781895012
-        with urllib.request.urlopen("https://dictionary.cambridge.org/dictionary/english/" + verb) as response:
-            html = response.read()
-            soup = BeautifulSoup(html, 'html.parser')
-            meaning = soup.find('b', {'class': 'def'})
-            if meaning == None:
-                return None
-            else:
-                meaning = meaning.get_text()
-                return meaning
 
 @app.route("/location_track",  methods=["GET", "POST"] )
 def location_track():
