@@ -8,11 +8,14 @@ from flask_babel import Babel
 
 UPLOAD_FOLDER = 'shopping_website/static/images/'                             # 사진 저장위치는 run.py 기준!
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+UPLOAD_FOLDER_usb = '/home/pi/rs_usb/Pictures_usb/images/'
+
 
 app = Flask(__name__)
 app.jinja_env.auto_reload= True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER_usb'] = UPLOAD_FOLDER_usb
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 login_manager = LoginManager()

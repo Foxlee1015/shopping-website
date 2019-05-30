@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime, date, time
 from flask_babel import Babel, format_date, gettext
 from PIL import Image
-from flask import Flask, render_template, url_for, flash, request, redirect, session, flash
+from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory
 from shopping_website import app, mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
 from shopping_website.shop_methods import update_info, send_reset_email, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data
@@ -20,6 +20,10 @@ from bs4 import BeautifulSoup
 import urllib.request
 from babel import numbers, dates
 import re
+
+@app.route('/uploads/<path:filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER_usb'],filename, as_attachment=True)
 
 @babel.localeselector
 def get_locale():
