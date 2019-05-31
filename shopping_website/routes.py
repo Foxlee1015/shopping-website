@@ -27,8 +27,20 @@ def download_file(filename):
 
 @babel.localeselector
 def get_locale():
-    return 'ko'
-    #return request.accept_languages.best(['en', 'ko'])  # 사용자의 위치에 따라 언어 바뀜(best, 가능한 옵션중(나의 경우. 영어, 한국어)
+    """
+    1. 세션에 저장되어 있는 언어 2.Ip 주소로 한국이면 한국어 그외 영어로 설정
+    """
+    try:
+        language = session['language']
+        return language
+    except:
+        a, b, c = Get_ip_loca()
+        if a == "South Korea":
+            return 'ko'
+        else:
+            return 'en'
+        #return app.config['BABEL_DEFAULT_LOCALE']
+        #return request.accept_languages.best(['en', 'ko'])  # 사용자의 위치에 따라 언어 바뀜(best, 가능한 옵션중(나의 경우. 영어, 한국어)
 
 
 def Get_ip_loca():
@@ -223,8 +235,8 @@ def login_required(f):
 @app.route("/logout/")
 @login_required
 def logout():
-    session.clear()
-    flash("You have been logged out!")
+    #session.clear() 세션에 저장된 언어 정보도 사라짐
+    #flash("You have been logged out!")
     gc.collect()
     return redirect(url_for('home'))
 
@@ -319,6 +331,7 @@ def register_product():
             info_list =check_info("user_list", "email", email)
             username = info_list[0][1]
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            #file.save(os.path.join(app.config['UPLOAD_FOLDER_usb'], filename)) 주석 제거시 둘다 저장하는 것이 아닌 먼저 저장되면 파일은 사라짐
             insert_data1("product_info", product_name, product_intro, filename, username, product_tag)
             flash('상품이 등록되었습니다.')
             return redirect(url_for('home'))
