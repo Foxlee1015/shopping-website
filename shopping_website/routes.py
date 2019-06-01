@@ -235,8 +235,11 @@ def login_required(f):
 @app.route("/logout/")
 @login_required
 def logout():
-    #session.clear() 세션에 저장된 언어 정보도 사라짐
-    #flash("You have been logged out!")
+    if session['language']:
+        lang = session['language']
+    session.clear() #세션에 저장된 언어 정보도 사라짐
+    session['language'] = lang
+    flash("You have been logged out!")
     gc.collect()
     return redirect(url_for('home'))
 
