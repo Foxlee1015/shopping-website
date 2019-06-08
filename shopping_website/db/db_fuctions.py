@@ -1,5 +1,5 @@
-from shopping_website import app, mail
-from shopping_website.dbconnect import connection
+from shopping_website import mail
+from shopping_website.db.dbconnect import connection
 from MySQLdb import escape_string as thwart
 from flask_mail import Message
 

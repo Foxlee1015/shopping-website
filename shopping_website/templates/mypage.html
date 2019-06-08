@@ -1,6 +1,6 @@
 {% extends "layout_2.html" %}
 {% block content %}
-<form method="POST" action="">
+<form method="POST" action="{{ url_for('main.my_page') }}">
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">배송지를 입력해주세요. </legend>
             <div class="form-group">
