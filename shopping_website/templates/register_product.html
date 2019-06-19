@@ -2,9 +2,9 @@
 {% block content %}
     <form method="POST" action="" enctype="multipart/form-data">                 <!-- 파일 post 시 enctype 필요 -->
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4">상품을 등록해주세요.</legend>
+            <legend class="border-bottom mb-4">{{ _('register a product') }}</legend>
             <div class="form-group">
-            <label for="exampleFormControlSelect1">상품 태그</label>
+                <label for="exampleFormControlSelect1">{{ _('tag') }}</label>
                 {{ form.product_tag(class="form-control") }}
                 {{ form.product_name.label(class="form-control-label") }}
                 {% if form.product_name.errors %}
@@ -49,7 +49,7 @@
 
         </fieldset>
         <div class="login__content login__content--trigger">
-          <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="okay">
+          <input class="btn btn-sm btn-outline-secondary mr-4" type="submit" value="{{ _('okay') }}">
         </div>
     </form>
 {% endblock content %}

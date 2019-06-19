@@ -2,14 +2,13 @@
 {% block content %}
 <form method="POST" action="">
      <fieldset class="form-group">
-           <legend class="border-bottom mb-4">구매 리스트. </legend>
+           <legend class="border-bottom mb-4">{{ _('purchase') }}</legend>
             <table class="table table-striped table-sm">
               <thead>
                 <tr>
-                  <th>상품 번호</th>
-                  <th>상품 이름</th>
-                  <th>상품 소개</th>
-                  <th>링크</th>
+                  <th>{{ _('product_number') }}</th>
+                  <th>{{ _('product_name') }}</th>
+                  <th>{{ _('product_intro') }}</th>
                 </tr>
               </thead>
             <tbody>
@@ -18,14 +17,14 @@
               <td>{{ wish_list_products[i][0][0] }}</td>
               <td>{{ wish_list_products[i][0][1] }}</td>
               <td>{{ wish_list_products[i][0][2] }}</td>
-              <td>____링크____</td>
             </tr>
             {% endfor %}
             </tbody>
             </table>
      </fieldset>
-     <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="상품 위치 확인">
- </form>
+     <input class="btn btn-sm btn-outline-secondary" type="submit" value="{{ _('track my order') }}">
+</form>
+
 
 <p></p>
 {% if track: %}

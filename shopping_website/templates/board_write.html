@@ -1,8 +1,8 @@
 {% extends "layout_2.html" %}
 {% block content %}
-    <form action="{{ url_for('board.board_page') }}"  method="POST" >
+    <form method="POST" action="">
         <fieldset class="form-group">
-            <legend class="border-bottom mb-4">{{ username }} 님. 글을 작성해주세요.</legend>
+            <legend class="border-bottom mb-4">{{ username }} </legend>
             <div class="form-group">
                 {{ form.title.label(class="form-control-label") }}
                 {% if form.title.errors %}
@@ -59,7 +59,7 @@
             </div>
         </fieldset>
         <div class="login__content login__content--trigger">
-          <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="확인">
+          <input class="btn btn-sm btn-outline-secondary mr-4" type="submit" value="{{ _('submit') }}">
         </div>
     </form>
 {% endblock content %}

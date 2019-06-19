@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <title>Foxlee-shopping</title>
-    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">-->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
     <script type="text/javascript">
     function bottom_new(bottom) {
@@ -17,59 +16,73 @@
   {% else %}
   <body>
   {% endif %}
-  <!---->
+  
   <div class="container">
   <header class="blog-header py-3">
     <div class="row flex-nowrap justify-content-between align-items-center">
       <div class="col-4 pt-1">
-        <a class="text-muted" href="/">Home</a>
+        <a class="text-muted" href="/">{{ _('home') }}</a>
+        <a class="text-muted" href="/admin"> {{"  " }}  </a>
+        <a class="text-muted" href="/admin">{{ _('admin') }}</a>     
       </div>
       <div class="col-4 text-center">
         <a class="blog-header-logo text-dark" href="/">Foxlee-shop</a>
       </div>
       <div class="col-4 d-flex justify-content-end align-items-center">
         <a class="text-muted" href="#"></a>
+        
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary mr-4" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="fasle">
+          {{ _('language') }}
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="/language/en">{{ _('lang1') }}</a>
+            <a class="dropdown-item" href="/language/ko">{{ _('lang2') }}</a>
+          </div>
+        </div>
+
         {% if session.logged_in %}
         <div class="dropdown">
           <button class="btn btn-sm btn-outline-secondary mr-4" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            내 정보
+            {{ _('mypage') }}
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {% if rank == 0 or rank[0][0] == None: %}
+            {% if rank == 0 or rank[0][0] == None %}
             <form action="{{ url_for('main.home') }}" method="POST">
-              <input class="dropdown-item" href="/register_product" type="submit" value="판매자등록" >
+              <input class="dropdown-item" href="/register_product" type="submit" value="{{ _('rg_seller')}}" >
             </form>
             {% else %}
-            <a class="dropdown-item" href="/register_product">상품 등록</a>
+            <a class="dropdown-item" href="/register_product">{{ _('sell') }}</a>
             {% endif %}
-            <a class="dropdown-item" href="/wish_list">장바구니</a>
-            <a class="dropdown-item" href="/mypage">My page</a>
-            <a class="dropdown-item" href="/board">Q & A</a>
+            <a class="dropdown-item" href="/wish_list">{{_('wishlist') }}</a>
+            <a class="dropdown-item" href="/mypage">{{ _('mypage') }}</a>
+            <a class="dropdown-item" href="/board">{{ _('Q & A') }}</a>
           </div>
         </div>
-        <a class="btn btn-sm btn-outline-secondary mr-4" href="/logout">Log out</a>
+        <a class="btn btn-sm btn-outline-secondary mr-4" href="/logout">{{ _('logout') }}</a>
         {% else %}
-        <a class="btn btn-sm btn-outline-secondary mr-4" href="/login">Log in</a>
-        <a class="btn btn-sm btn-outline-secondary" href="/register">Sign up</a>
+        <a class="btn btn-sm btn-outline-secondary mr-4" href="/login">{{ _('login') }}</a>
+        <a class="btn btn-sm btn-outline-secondary" href="/register">{{ _('signup') }}</a>
         {% endif %}
       </div>
     </div>
   </header>
-     {% if ip: %}<div style="text-align:right;">IP : {{ ip }} / City : {{ city }}</div> {% else %} {% endif %}
+      {% if points: %}<div style="text-align:right;"> {{ _('point') }} : {{ points[0][0] }} </div> {% else %} {% endif %}
+  {% if ip: %}<div style="text-align:right;">IP : {{ ip }} / Country : {{ country }}</div> {% else %} {% endif %}
   <div class="nav-scroller py-1 mb-2">
     <nav class="nav d-flex justify-content-between">
-      <a class="p-2 text-muted" href="/tag/1">여성패션</a>
-      <a class="p-2 text-muted" href="/tag/2">남성패션</a>
-      <a class="p-2 text-muted" href="/tag/3">뷰티</a>
-      <a class="p-2 text-muted" href="/tag/4">식품</a>
-      <a class="p-2 text-muted" href="/tag/5">주방용품</a>
-      <a class="p-2 text-muted" href="/tag/6">생활용품</a>
-      <a class="p-2 text-muted" href="/tag/7">홈인테리어</a>
-      <a class="p-2 text-muted" href="/tag/8">가전디지털</a>
-      <a class="p-2 text-muted" href="/tag/9">자동차</a>
-      <a class="p-2 text-muted" href="/tag/10">완구취미</a>
-      <a class="p-2 text-muted" href="/tag/11">문구</a>
-      <a class="p-2 text-muted" href="/tag/12">도서</a>
+      <a class="p-2 text-muted" href="/tag/1">{{ gettext('female') }}</a>
+      <a class="p-2 text-muted" href="/tag/2">{{ gettext('male') }}</a>
+      <a class="p-2 text-muted" href="/tag/3">{{_('beauty') }}</a>
+      <a class="p-2 text-muted" href="/tag/4">{{_('food') }}</a>
+      <a class="p-2 text-muted" href="/tag/5">{{ _('kitchen') }}</a>
+      <a class="p-2 text-muted" href="/tag/6">{{ _('home tools') }}</a>
+      <a class="p-2 text-muted" href="/tag/7">{{ _('home design')}}</a>
+      <a class="p-2 text-muted" href="/tag/8">{{ _('device') }}</a>
+      <a class="p-2 text-muted" href="/tag/9">{{ _('car') }}</a>
+      <a class="p-2 text-muted" href="/tag/10">{{ _('hobby') }}</a>
+      <a class="p-2 text-muted" href="/tag/11">{{ _('stationary') }}</a>
+      <a class="p-2 text-muted" href="/tag/12">{{ _('book') }}</a>
     </nav>
   </div>
   <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
@@ -98,7 +111,7 @@
       {% else %}
       <div class="carousel-item active">
         <a  href="/tag/1"><img src="../static/images/1.png" class="d-block w-100" alt="1", title="여성패션"></a>
-        </div>
+      </div>
       <div class="carousel-item">
         <a  href="/tag/2"><img src="../static/images/2.png" class="d-block w-100" alt="2", title="남성패션"></a>
       </div>
@@ -146,8 +159,10 @@
     </a>
     {% endif %}
   </div>
+  <div class="col-md-6 px-0"></div>
+  <div class="col-md-6 px-0"></div>
   {% if tag_num: %}     <!--tag_num 있으면 자동으로 내려감-->
-    <div id="bottom"><p></p></div>
+  <div id="bottom"><p></p></div>
   {% else: %}{% endif %}
   <div class="row mb-2"> <!--상품 포스트 container 시작-->
     {% for i in range(n) %}
@@ -155,21 +170,21 @@
       <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
         <div class="col p-4 d-flex flex-column position-static">
           <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}  </strong>
-          {% if p_list[i][5]: %}
-          <p class="mb-0">      판매자 : {{ p_list[i][5] }}</p>
+           {% if p_list[i][5]: %}
+          <p class="mb-0">      {{ _('seller') }} : {{ p_list[i][5] }}</p>
           {% else %}{% endif %}
           {% if p_list[i][6]: %}
-          <p class="mb-0"> Tag: {{ p_list[i][6] }} {{ categories[p_list[i][6]] }}  </p>
+          <p class="mb-0">  {{ categories[p_list[i][6]] }}  </p>
           {% else %}{% endif %}
-          <p class="card-text mb-auto">상품 소개: {{ p_list[i][2] }}</p>
+          <p class="card-text mb-auto">{{ _('intro') }}: {{ p_list[i][2][:10] }}...</p>
           <p></p>
-          <p></p>
-          <div class="mb-1 text-muted">좋아요 : {{ likes_count_all[i] }}</div>
-          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">자세히</a>
+          <p>{{ _('price') }} : {{ p_list[i][7] }} </p>
+          <div class="mb-1 text-muted"> {{ _('likes') }} : {{ likes_count_all[i] }}</div>
+          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">{{ _('quick look') }}</a>
         </div>
         <div class="col-auto d-none d-lg-block">
-          <!--<image width="200" height="250" src="/uploads/{{ p_list[i][3] }}"></image>  # 외부에서 가져오기 -->
-          <image width="200" height="250" src="../static/images/{{ p_list[i][3] }}"></image>
+          <image width="200" height="250" src="/uploads/{{ p_list[i][3] }}"></image>
+          <!--<image width="200" height="250" src="../static/images/{{ p_list[i][3] }}"></image>-->
         </div>
       </div>
     </div> <!--상품 포스트 1 끝-->
@@ -183,13 +198,10 @@
           <div class="modal fade show" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-modal="true" style="display: block;">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">방문해주셔서 감사합니다.</h5><p></p>
-                </div>
                 <div class="modal-body"><p><h5>{{ message }}</h5></p>
                 </div>
                 <div class="modal-footer">
-                    <a class="btn btn-secondary" href="/">확인</a>
+                    <a class="btn btn-secondary" href="/">{{ _('okay')  }}</a>
                 </div>
               </div>
             </div>
@@ -201,7 +213,7 @@
 <footer class="blog-footer">
   <p>Blog template built for <a href="https://getbootstrap.com/">Bootstrap</a> by <a href="https://twitter.com/mdo">@mdo</a>.</p>
   <p>Daehan LEE.
-    <a href="#">Back to home/a>
+    <a href="#">Back to top</a>
   </p>
 </footer>
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

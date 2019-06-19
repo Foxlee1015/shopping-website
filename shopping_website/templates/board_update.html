@@ -1,6 +1,6 @@
 {% extends "layout_2.html" %}
 {% block content %}
- <form action="/board_update/{{ board_list[i][0] }}" method="POST">
+<form action="/board_update/{{ board_list[i][0] }}" method="POST">
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">{{ username }} </legend>
             <div class="form-group">
@@ -59,7 +59,7 @@
             </div>
         </fieldset>
         <div class="login__content login__content--trigger">
-            {{ update_form.submit(class="btn btn-sm btn-outline-secondary", type="submit", value="Update") }}
+            {{ update_form.submit(class="btn btn-sm btn-outline-secondary", type="submit", value="UPDATE") }}
         </div>
         <p></p>
     </form>
@@ -69,4 +69,5 @@
             </form>
 
     <p></p>
+
 {% endblock content %}

@@ -4,9 +4,9 @@
 <table id="faqlist" class="blist faqlist" summary="FAQ 목록입니다.">
     <thead>
         <tr>
-            <th scope="col" class="lbg"><span>번호</span></th>
-            <th scope="col"><span>제목</span></th>
-            <th scope="col">email</span></th>
+            <th scope="col" class="lbg"><span>{{ _('number') }}</span></th>
+            <th scope="col"><span>{{ _('title') }} </span></th>
+            <th scope="col">{{ _('email') }}</span></th>
         </tr>
     </thead>
 {% for i in range(board_count_n) %}
@@ -14,9 +14,8 @@
     	<tr class="fir">
             <td class="num">{{ board_list[i][0] }}</td>
             <td class="qtype">{{ board_list[i][1] }}</td>
-            <td class="title">{{ board_list[i][3] }}</td>
-            <td class="qtype"><a href="/board_update/{{ board_list[i][0] }}" id="144">수정 및 삭제</a></td>
-            </form>
+            <td class="title"><a href="#data1" id="144">{{ board_list[i][3] }}</a></td>
+            <td class="qtype"><a href="/board_update/{{ board_list[i][0] }}" id="144">{{ _('update and delete') }}</a></td>
         </tr>
         <tr id="data1" class="answer" style="display: none;">
             <td colspan="3">
@@ -31,5 +30,5 @@
 </form>
 <p></p>
 <p></p>
-    <a class="btn btn-sm btn-outline-secondary" href="/board_write">글쓰기</a>
+    <a class="btn btn-sm btn-outline-secondary mr-4" href="/board_write">{{ _('write') }}</a>
 {% endblock content %}

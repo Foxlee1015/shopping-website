@@ -2,18 +2,19 @@
 {% block content %}
 <div class="nav-scroller py-1 mb-2">
     <nav class="nav d-flex justify-content-between">
-      <a class="p-2 text-muted" href="#">여성패션</a>
-      <a class="p-2 text-muted" href="#">남성패션</a>
-      <a class="p-2 text-muted" href="#">뷰티</a>
-      <a class="p-2 text-muted" href="#">식품</a>
-      <a class="p-2 text-muted" href="#">주방용품</a>
-      <a class="p-2 text-muted" href="#">생활용품</a>
-      <a class="p-2 text-muted" href="#">홈인테리어</a>
-      <a class="p-2 text-muted" href="#">가전디지털</a>
-      <a class="p-2 text-muted" href="#">자동차</a>
-      <a class="p-2 text-muted" href="#">완구취미</a>
-      <a class="p-2 text-muted" href="#">문구</a>
-      <a class="p-2 text-muted" href="#">도서</a>
+      <a class="p-2 text-muted" href="/tag/1">{{ gettext('female') }}</a>
+      <a class="p-2 text-muted" href="/tag/2">{{ gettext('male') }}</a>
+      <a class="p-2 text-muted" href="/tag/3">{{_('beauty') }}</a>
+      <a class="p-2 text-muted" href="/tag/4">{{_('food') }}</a>
+      <a class="p-2 text-muted" href="/tag/5">{{ _('kitchen') }}</a>
+      <a class="p-2 text-muted" href="/tag/6">{{ _('home tools') }}</a>
+      <a class="p-2 text-muted" href="/tag/7">{{ _('home design')}}</a>
+      <a class="p-2 text-muted" href="/tag/8">{{ _('device') }}</a>
+      <a class="p-2 text-muted" href="/tag/9">{{ _('car') }}</a>
+      <a class="p-2 text-muted" href="/tag/10">{{ _('hobby') }}</a>
+      <a class="p-2 text-muted" href="/tag/11">{{ _('stationary') }}</a>
+      <a class="p-2 text-muted" href="/tag/12">{{ _('book') }}</a>
+
     </nav>
 </div>
 
@@ -24,24 +25,23 @@
         <div class="col p-4 d-flex flex-column position-static">
           <strong class="d-inline-block mb-2 text-primary" name="product_name" value="product_name">{{ product_detail[1] }}</strong>
           <h3 class="mb-0"></h3>
-          <div class="mb-1 text-muted">등록 날짜: </div>
           {% if product_detail[5]: %}
-          <p class="mb-0">      판매자 : {{ product_detail[5] }}</p>
+          <p class="mb-0"> {{ _('sellser') }} : {{ product_detail[5] }}</p>
           {% else %}{% endif %}
           {% if product_detail[6]: %}
           <p class="mb-0"> Tag number: {{ categories[product_detail[6]] }}  </p>
           {% else %}{% endif %}
-          <p class="card-text mb-auto">상품 소개: {{ product_detail[2] }}</p>
+          <p class="card-text mb-auto">{{_('intro') }}: {{ product_detail[2] }}</p>
+          <p></p>
           <p></p>
           {% if datamatch == True %}
-          <a class="login__button login__button--submit _loginSubmitButton" href="/product_update/{{product_detail[0]}}">수정 및 삭제</a>
+          <a class="btn btn-sm btn-outline-secondary mr-4" href="/product_update/{{product_detail[0]}}"> {{ _('update and delete') }}</a>
           {% else %}
-          <input class="login__button login__button--submit _loginSubmitButton" type="submit" value="장바구니">
+          <input class="btn btn-sm btn-outline-secondary mr-4" type="submit" value="{{ _('add to cart') }}">
           {% endif %}
-          <p></p>
         </div>
         <div class="col-auto d-none d-lg-block">
-          <image width="200" height="250" src="../static/images/{{ product_detail[3] }}"></image>
+          <image width="200" height="250" src="/uploads/{{ product_detail[3] }}"></image>
         </div>
       </div>
     </div> <!--상품 포스트 1 끝-->

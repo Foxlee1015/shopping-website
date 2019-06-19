@@ -19,7 +19,7 @@
                 {% endif %}
             </div>
 
-            <div class="form-group">
+             <div class="form-group">
                 {{ update_form.product_intro.label(class="form-control-label") }}
                 {% if update_form.product_intro.errors %}
                     {{ update_form.product_intro(class="form-control form-control-lg is-invalid") }}
@@ -37,23 +37,21 @@
                 {% if update_form.product_pic.errors %}
                     {{ update_form.product_pic(class="form-control form-control-lg is-invalid") }}
                     <div class="invalid-feedback">
-                        {% for error in update_form.product_pic.errors %}
+                        {% for error in form.product_pic.errors %}
                             <span>{{ error }}</span>
                         {% endfor %}
                     </div>
                 {% else %}
-                <p><input type=file name=file value="{{request.form.product_pic}}">     <!-- request.update_form.~  -->
-                  </p>
+                <p><input type=file name=file value="{{request.form.product_pic}}"></p>   <!-- request.update_form.~ 에러발생 form 이름 변경 없이 사용 -->
                 {% endif %}
             </div>
 
-        </fieldset>
+         </fieldset>
         <div class="login__content login__content--trigger">
             {{ update_form.submit(class="btn btn-sm btn-outline-secondary", type="submit", value="Update") }}
-          <!--<input class="login__button login__button--submit _loginSubmitButton" type="submit" value="okay">-->
         </div>
 
-    </form>
+     </form>
     <p></p>
     <p></p>
     <form action='/product_update/{{ product_list[0][0] }}' method='POST'>
@@ -61,4 +59,4 @@
         {{ del_form.submit1(class="btn btn-sm btn-outline-secondary", type="submit", value="Delete") }}
     </form>
 
-{% endblock content %}
+ {% endblock content %}

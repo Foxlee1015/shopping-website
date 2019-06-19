@@ -43,10 +43,10 @@
 				</div>
 			</div>
 			<div class="login__content login__content--trigger">
-				<input class="login__button login__button--submit _loginSubmitButton" type="submit" value="Login">
+				<input class="login__button login__button--submit _loginSubmitButton" type="submit" value="{{ _('login') }}">
 			</div>
 			<hr class="login__separator">
-			<a class="login__button login__button--join _loginJoinLink" href="/register">Sing up</a>
+			<a class="login__button login__button--join _loginJoinLink" href="/register">{{ _('signup') }}</a>
 			</fieldset>
 		</form>
 		<hr class="login__separator">
@@ -59,7 +59,7 @@
 		{% endfor %}
         {% endif %}
         {% endwith %}
-		<a href="/reset/">Forgot Password?</a>
+		<a href="/reset/">{{ _('Forgot Password') }}</a>
 		</div>
 	</div>
 </div>
