@@ -8,7 +8,7 @@ from flask import Flask, render_template, url_for, flash, request, redirect, ses
 from shopping_website import mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
 from shopping_website.db.db_fuctions import order_info, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, check_product, update_data, update_location, delete_data, update_info1
-from shopping_website.main.main_fuctions import send_reset_email, Get_ip_loca, Get_product_location
+from shopping_website.main.main_fuctions import send_reset_email, Get_ip_loca, Get_product_location, users_list
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -84,6 +84,7 @@ def home():
     """
     Post = rank( '1' = 판매자)  - update_data - rank 값 0 or None -> '1'
     """
+    print(users_list())
     try:
         form = Submit_Form(request.form)
         email = session['email']
