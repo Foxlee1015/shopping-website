@@ -3,7 +3,7 @@ from flask_babel import gettext
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website.forms import ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_functions import get_userid, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data, insert_data6, likes_info, check_cart
+from shopping_website.db.db_functions import get_userid, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data, insert_data6, likes_info, check_cart, get_userinfo
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -32,7 +32,9 @@ def register_product():
     random_hex = secrets.token_hex(8)
     form = ProductForm(request.form)
     email = session['email']
+    user_id = get_userid(email)
     rank = check_info2("rank", "user_list", "email", email)
+    price = "50"
     if rank[0][0] == None:
         flash( gettext('rg_seller'))
         return redirect(url_for('main.home'))
@@ -51,10 +53,9 @@ def register_product():
             #file.thumbnail(output_size)
             info_list =check_info("user_list", "email", email)
             username = info_list[0][1]
-            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))   주석 제거시 둘다 저장하는 것이 아닌 먼저 저장되면 파일은 사라짐
             from run import app
-            file.save(os.path.join(app.config['UPLOAD_FOLDER_usb'], filename))
-            insert_data1("product_info", product_name, product_intro, filename, username, product_tag)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            insert_data1("product_info", product_name, product_intro, filename, str(user_id), product_tag, price)
             flash(gettext('success'))
             return redirect(url_for('main.home'))
     else:
@@ -68,75 +69,32 @@ def product_details(product_n):
     user_id = get_userid(email)
     get_likes = likes_info()
     u_idforproduct = [list[0] for list in get_likes if list[1] == product_n ]
-    count_likes = len(u_idforproduct) # 해당 상품의 좋아요 수
-    # 상품 번호로 상품 정보 가져오기 
+    count_likes = len(u_idforproduct)
 
+    # 구매자(로그인한아이디) - 판매자(글올린아이디)
+    buyer = user_id
     product_list = check_info("product_info", "product_n", str(product_n))
-    info_list = check_info("user_list", "email", email)
-    username_email = info_list[0][1]
-    username_product = product_list[0][5]
-
-    if username_email == username_product: # 자신이  판매자
+    seller = product_list[0][5]
+    if buyer == seller :
         datamatch = True
-    if username_email != username_product: 
+    if buyer != seller :
         datamatch = False
 
     if request.method == "POST":
-        info_list =check_info("user_list", "email", email)
-        uid = str(info_list[0][0])
-        product_n = str(product_n)
         p = check_cart("user_cart", "user_id", "product_id", str(user_id) ,str(product_n) )
-        if p: 
+        if p: # 장바구니에 이미 있다면
             flash( gettext('already in a cart'))
-            return redirect(url_for('main.home')) 
-
+            return redirect(url_for('main.home'))
         else:
             insert_data6("user_cart", str(user_id), str(product_n))
             flash( gettext('added') )
             return  redirect(url_for('main.home'))
-        """
-        product_likes_list = check_info2("likes", "product_info", "product_n", product_n)
-        product_uid_list = product_likes_list[0][0]
-        if 1:
-            if product_uid_list == None:
-                update_data("product_info", "likes", uid, "product_n", product_n)
-                product_list = check_product("product_info")
-                n = len(product_list)
-            elif uid in str(product_uid_list): 
-                pass
-            else:                                                                             # 기존 데이터에 추가하기
-                new_product_likes = str(product_uid_list) + "," + uid
-                update_data("product_info", "likes", new_product_likes, "product_n", product_n)
-                product_list = check_product("product_info")
-                n = len(product_list)
-        likes_list = check_info2("likes", "user_list", "email", email)
-        # likes_list[0][0] = 기존에 장바구니에 저장된 상품 번호
-        if likes_list[0][0] == None or  likes_list[0][0] == "":                      # 아예 db에 likes 가 없는 경우or 주문해서 삭제된 경우 "" 로 
-            update_data("user_list", "likes", product_n, "email", email)
-            product_list = check_product("product_info")                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
-            n = len(product_list)
-            flash( gettext('added') )
-            return  redirect(url_for('main.home')) #render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
-        elif product_n in likes_list[0][0]:              # 해당 상품 번호가 이미 likes에 있는 경우
-            flash( gettext('already in a cart'))
-            return redirect(url_for('main.home')) # render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
-        else:
-            new_list = likes_list[0][0] + "," + product_n
-            update_data("user_list", "likes", new_list, "email", email)
-            product_list = check_product("product_info")                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
-            n = len(product_list)
-            flash( gettext('added'))
-            return redirect(url_for('main.home')) #render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
-        """
-
-    else: #GET
+    else:
         product_list = check_info("product_info", "product_n", str(product_n))
-        print(product_list)
         n = len(product_list)
-        for i in range(n):                                        # 해당 상품의 정보 가져오고(DB)
-            if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보(DB)와 자세히 버튼을 누른 상품의 번호와 일치하면
-                product_detail = product_list[i]
         return render_template('product_list.html', product_detail=product_list[0], title="product_datails", datamatch=datamatch)
+
+
 
 @product.route("/tag/<int:tag_num>", methods=["GET", "POST"])
 def product_tag(tag_num):
@@ -202,15 +160,7 @@ def product_update(product_n):
         if del_form.validate():
             delete_data("product_info", "product_n", product_str_n)
             flash(gettext('글이 삭제되었습니다.'))
-            likes_list = check_info2("likes", "user_list", "email", email) # 기존 유저의 likes 리스트에서 제거된 상품번호 제거
-            update_list = likes_list[0][0].split(',')
-            update_list.remove(product_str_n)
-            n = len(update_list)
-            wish_list_products = ""
-            for i in range(n):
-                wish_list_products += update_list[i] +','
-            wish_list_products = wish_list_products[0:-1] #마지막 , 제거
-            update_data("user_list", "likes", wish_list_products, "email", email)  # 수정된 likes 리스트 업데이트
+            delete_data("user_cart", "product_id", product_str_n)
             return redirect(url_for('main.home'))
         else:
             return redirect(url_for('main.home'))

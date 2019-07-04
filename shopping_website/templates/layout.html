@@ -22,7 +22,7 @@
     <div class="row flex-nowrap justify-content-between align-items-center">
       <div class="col-4 pt-1">
         <a class="text-muted" href="/">{{ _('home') }}</a>
-        <a class="text-muted" href="/admin/page">{{ _('admin') }}</a>     
+        <a class="text-muted" href="/admin/orders" style="margin-left: 10px;" >{{ _('admin') }}</a>     
       </div>
       <div class="col-4 text-center">
         <a class="blog-header-logo text-dark" href="/">Foxlee-shop</a>
@@ -167,23 +167,25 @@
     {% for i in range(n) %}
     <div class="col-md-6"> <!--상품 포스트 1 시작-->
       <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
-        <div class="col p-4 d-flex flex-column position-static">
-          <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}  </strong>
-           {% if p_list[i][5]: %}
-          <p class="mb-0">      {{ _('seller') }} : {{ p_list[i][5] }}</p>
-          {% else %}{% endif %}
-          {% if p_list[i][6]: %}
-          <p class="mb-0">  {{ categories[p_list[i][6]] }}  </p>
-          {% else %}{% endif %}
-          <p class="card-text mb-auto">{{ _('intro') }}: {{ p_list[i][2][:10] }}...</p>
-          <p></p>
-          <p>{{ _('price') }} : {{ p_list[i][7] }} </p>
-          <div class="mb-1 text-muted"> {{ _('likes') }} : {{ likes_count_all[i] }}</div>
-          <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">{{ _('quick look') }}</a>
+        <div class="col p-4 d-flex flex-column position-static" style="width:100%; height: 100%; overflow:hidden;">
+          <div>
+            <strong class="d-inline-block mb-2 text-primary" value="product_name">{{ p_list[i][1] }}  </strong>
+             {% if p_list[i][5]: %}
+            <p class="mb-0">      {{ _('seller') }} : {{ seller[i] }}</p>
+            {% else %}{% endif %}
+            {% if p_list[i][6]: %}
+            <p class="mb-0">  {{ categories[p_list[i][6]] }}  </p>
+            {% else %}{% endif %}
+            <p class="card-text mb-auto">{{ _('intro') }}: {{ p_list[i][2][:10] }}...</p>
+            <p></p>
+            <p>{{ _('price') }} : {{ p_list[i][7] }} </p>
+            <div class="mb-1 text-muted"> {{ _('likes') }} : {{ count[i] }}</div>
+            <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">{{ _('quick look') }}</a>
+          </div>  
         </div>
         <div class="col-auto d-none d-lg-block">
+          <!--<image width="max-width: 100%" height="max-height:100%" src="/uploads/{{ p_list[i][3] }}"></image>-->
           <image width="200" height="250" src="/uploads/{{ p_list[i][3] }}"></image>
-          <!--<image width="200" height="250" src="../static/images/{{ p_list[i][3] }}"></image>-->
         </div>
       </div>
     </div> <!--상품 포스트 1 끝-->

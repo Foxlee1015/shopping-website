@@ -7,7 +7,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website import mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_functions import order_info, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, check_product, update_data, update_location, delete_data, update_info1, likes_info, get_userid
+from shopping_website.db.db_functions import order_info, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, check_product, update_data, update_location, delete_data, update_info1, likes_info, get_userid, get_userinfo
 from shopping_website.main.main_functions import send_reset_email, Get_ip_loca, Get_product_location, users_list
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
@@ -42,7 +42,6 @@ def get_locale():
         return language
     except:
         a, b, c = Get_ip_loca()
-        print(a)
         if a == "South Korea":
             session['language'] = 'ko'
             return 'ko'
@@ -60,29 +59,31 @@ def language(language):
     return redirect(url_for('main.home'))
 
 
-
 @main.context_processor
 def context_processor():
     product_list = check_product("product_info")
     x = likes_info()
     likes_count = []
+    seller_list = []
     for i in range(len(product_list)):
         z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
         likes_count.append(z)
+        seller = get_userinfo("user_list","uid", str(product_list[i][5]))
+        seller_list.append(seller[0][1])
     n = len(product_list)
     categories_ko = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     categories_en = ['0', 'Female', 'Male', 'Beauty', 'Food', 'Kichen', 'Home Tools' ,'Home Design', 'Device', 'Car', 'Hobby', 'Stationary', 'Book']
     try:
         if session['language'] == 'ko':
-            return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n)
+            return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n, seller=seller_list)
         elif session['language'] == 'en':
-            return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n)
+            return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n, seller=seller_list)
     except:
         a,b,c = Get_ip_loca()
         if a == "South Korea" or "Seoul":
-            return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n)
+            return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n, seller=seller_list)
         else:
-            return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n)
+            return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n, seller=seller_list)
 
 @main.route("/")
 @main.route("/home", methods=["GET", "POST"])
@@ -278,38 +279,36 @@ def my_page():
     Post = location_data-check_into = 기존 데이터 존재시 업데이트 => update_location / 없으면 첫 배송지 등록 insert_data3
     Get =  location_data 에서 데이터 있으면 기존 데이터 보여주고 없으면 ((""),(""),(""),(""),) -빈칸으로 출력
     """
-    try:
-        form = LocationForm(request.form)
-        email = session['email']
-        location_data = check_info("user_location", "email", email)
-        if request.method == "POST" and form.validate():
-            address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
-            if location_data != None:
-                update_location(address, zipcode, phonenumber, email)
-                flash( gettext('배송지 업데이트에 성공했습니다.'))
-                gc.collect()
-                return render_template("home.html", form=form)
-            else:
-                insert_data3(email, address, zipcode, phonenumber)
-                flash('dd' + gexttext(" 첫 배송지 등록 되었습니다."))
-                gc.collect()
-                return render_template("home.html", form=form)
+    form = LocationForm(request.form)
+    email = session['email']
+    user_id = str(get_userid(email))
+    rank = check_info2("rank", "user_list", "email", email)
+    location_data = check_info("user_location", "user_id", user_id)
+    if request.method == "POST" and form.validate():
+        address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
+        if location_data != None:
+            update_location(address, zipcode, phonenumber, user_id)
+            flash( gettext('배송지 업데이트에 성공했습니다.'))
+            return render_template("home.html", form=form, rank=rank)
         else:
-            if location_data != None:
-                location_data_all = check_info("user_location", "email", email)
-                return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
-            else:
-                location_data_all = ((""),(""),(""),(""),)
-                return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
-    except:
-        return redirect(url_for('main.login'))
+            insert_data3(user_id, address, zipcode, phonenumber)
+            flash( gexttext(' 첫 배송지 등록 되었습니다.'))
+            return render_template("home.html", form=form, rank=rank)
+    else:
+        if location_data != None:
+            location_data_all = check_info("user_location", "user_id", user_id)
+            return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
+        else:
+            location_data_all = ((""),(""),(""),(""),)
+            return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
 
 @main.route("/order_list",  methods=["GET", "POST"])
 @login_required
 def order_list():
     form = Submit_Form(request.form)
     email = session['email']
-    list = order_info(email)
+    user_id = get_userid(email)
+    list = order_info(str(user_id))
     if request.method == "POST":
         track = Get_product_location("6099732777648")
         return render_template('order_list.html', n=len(list), list=list, title="order_list", track=track, m=len(track), form=form)
@@ -320,54 +319,51 @@ def order_list():
 @login_required
 def wish_list():
     """
-    likes_list[0][0] ->  (('2,7,10,30',),) = (상품번호, 상품번호) 저장된 데이터로 상품 번호를 , 로 분리
-    상품번호 -> [2,7,10,30] 로부터 번호 정보 - check_info - 상품정보를 -> wish_list_products 에 저장
+    GET : 해당 이메일의 user_id -> 좋아요 수(len(z)) 확인 // wish_list
+    POST : 주문 생성 , 기존 장바구니 지우기
     """
     form = Submit_Form(request.form)
     email = session['email']
-    x=likes_info()                               # ((uid, product_number), ~ )
+    x = likes_info()                               # ((uid, product_number), ~ )
     y = get_userid(email)
+    user_id = str(y)
     z = [list[1] for list in x if list[0] == y ] # uid = y 의 상품번호 리스트]
-    #likes_list = check_info2("likes", "user_list", "email", email)
-    #product_numbers = likes_list[0][0]
-    #if product_numbers == None or product_numbers == "":
     if z == []:
-        product_list = check_product("product_info")
-        n = len(product_list)
         flash( gettext('등록된 상품이 없습니다.'))
         return redirect(url_for('main.home'))
-    #likes_product_number = product_numbers.split(',')
-    #n = len(likes_product_number)
-    wish_list_products = []
-    #print(likes_product_number)
+    wish_list = []
     n = len(z)
     for i in range(n):
-        wish_list_products.append(check_info("product_info", "product_n", str(z[i])))
-    #for i in range(n):
-    #    if likes_product_number[i] == "":
-    #        pass
-    #    else:
-    #        wish_list_products.append(check_info("product_info", "product_n", likes_product_number[i]))  # 테이블 이름, 컬럼 이름, 상품 번호
+        wish_list.append(check_info("product_info", "product_n", str(z[i])))
+
     if request.method =="POST":
+        # 상품 번호 목록 -> 가격 -> 지우기 -> 포인트 업데이트 -> 주문 생성 
         flash( gettext('구매 진행'))
-        points = check_info2("points", "user_list", "email", email)
-        points = int(points[0][0]) - 50*n
+        user_info = get_userinfo("user_list","uid",user_id)
+        points = user_info[0][6]            # 유저의 포인트
+        for i in range(n):
+            product_info = get_userinfo("product_info", "product_n", str(z[i]))
+            price = product_info[0][7]
+            points -= price                 # 상품 가격 차감
+
         points = str(points)
-        none_data= "" # 구매후 지우기 
-        update_info1("user_list", email, none_data, points)
+        update_info1("user_list", email, points) # 포인트 업데이트
+
+        # 장바구니 비우기
+        delete_data("user_cart", "user_id", user_id)
+
+        # 주문 생성
         fmt = "%Y-%m-%d %H:%M:%S"
         KST = datetime.now(timezone('Asia/Seoul'))
-        #now = datetime.now()
-        x = KST.strftime(fmt)
-        #x = '%s-%s-%s'%(now.year, now.month, now.day)
-        insert_data4(email,x)
+        x = KST.strftime(fmt)  #x = '%s-%s-%s'%(now.year, now.month, now.day)
+        insert_data4(user_id,x)
         y = check_product("user_order")
         number = str(y[-1][0])
-        for i in range(len(wish_list_products)):
-            insert_data5(number, str(wish_list_products[i][0][0]))
+        for i in range(len(wish_list)):
+            insert_data5(number, str(wish_list[i][0][0]))
         return redirect(url_for('main.order_list'))
     else:
-        return render_template('wishlist.html', n=n, wish_list_products=wish_list_products, title="wish_list")
+        return render_template('wishlist.html', n=n, wish_list_products=wish_list, title="wish_list")
 
 
 @main.route("/location_track",  methods=["GET", "POST"] )

@@ -28,19 +28,35 @@ def check_cart(tablename, colname1, colname2, value1, value2):
     conn.commit()
     c.close()
     conn.close()
-    print(list)
     return list
 
 
-def order_info(email):
+def order_info(user_id):
     c, conn = connection()
     c.execute("set names utf8")  # db 한글 있을 시 필요
-    data = c.execute("SELECT p.order_id, p.product_number, o.username, o.time FROM order_products AS p LEFT JOIN user_order AS o ON p.order_id = o.order_id where username=(%s)", [thwart(email)])
+    data = c.execute("SELECT p.order_id, p.product_number, o.user_id, o.time FROM order_products AS p LEFT JOIN user_order AS o ON p.order_id = o.order_id where user_id=(%s)", [thwart(user_id)])
     order_list = c.fetchall()
     conn.commit()
     c.close()
     conn.close()
     return order_list
+
+
+def get_userinfo(tablename,column, user_id):
+    """
+    input : user_list,user_id  // product_info, product_n
+    output : user_info         // product_info
+    user_info = [ uid, username, password, email, temp, rank, points]
+    """
+    c, conn = connection()
+    c.execute("set names utf8")
+    data = c.execute("SELECT * FROM "+tablename+" WHERE "+column+" = (%s)", [thwart(user_id)])
+    info = c.fetchall()
+    conn.commit()
+    c.close()
+    conn.close()
+    return info
+
 
 def get_userid(email):
     """
@@ -69,8 +85,6 @@ def check_info(table_name, column, value):
         return info_list
     else:
         return None
-# c.execute("SELECT * FROM board WHERE board_n = (%s)", [thwart(count_number)])
-# check_info("board", "board_n", count_number)
 
 def check_info2(row, table_name, column, value):           #이메일 입력 -> 비밀번호 출력
     c, conn = connection()
@@ -96,21 +110,9 @@ def check_product(table_name):
     table_name = table_name
     data = c.execute("SELECT * FROM "+table_name)
     product_info = c.fetchall()
-    """
-    n = len(product_list)
-    likes_count_all = []
-    try:
-        for i in range(n):
-            x = product_list[i][4]
-            if x != None:
-                likes_count = x.count(',') + 1
-                likes_count_all.append(likes_count)
-            else:
-                likes_count_all.append(0)
-        return product_list, likes_count_all
-    except:
-        return product_list
-    """
+    conn.commit()
+    c.close()
+    conn.close()
     return product_info
 
 def insert_data(table_name, value1, value2, value3):
@@ -122,11 +124,11 @@ def insert_data(table_name, value1, value2, value3):
     c.close()
     conn.close()
 
-def insert_data1(table_name, value1, value2, value3, value4, value5):
+def insert_data1(table_name, value1, value2, value3, value4, value5, value6):
     c, conn = connection()
-    data = db_input(table_name, value1, value2, value3, value4, value5)
+    data = db_input(table_name, value1, value2, value3, value4, value5, value6)
     c.execute("set names utf8")  # db에 한글 저장
-    c.execute("INSERT INTO "+data[0]+" (product_name, product_intro, filename, username, tag) VALUES (%s, %s, %s, %s, %s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4]), thwart(data[5])])
+    c.execute("INSERT INTO "+data[0]+" (product_name, product_intro, filename, user_id, tag, price) VALUES (%s, %s, %s, %s, %s, %s)", [thwart(data[1]), thwart(data[2]), thwart(data[3]), thwart(data[4]), thwart(data[5]), thwart(data[6])])
     conn.commit()
     c.close()
     conn.close()
@@ -135,24 +137,24 @@ def insert_data2(table_name, value1, value2, value3):
     c, conn = connection()
     data = db_input(table_name, value1, value2, value3)
     c.execute("set names utf8")  # db에 한글 저장
-    c.execute("INSERT INTO "+data[0]+" (title, content, email) VALUES (%s, %s, %s)", [thwart(data[1]), thwart(data[2]), thwart(data[3])])
+    c.execute("INSERT INTO "+data[0]+" (title, content, user_id) VALUES (%s, %s, %s)", [thwart(data[1]), thwart(data[2]), thwart(data[3])])
     conn.commit()
     c.close()
     conn.close()
 
-def insert_data3(email,address,zipcode,phonenumber):
+def insert_data3(user_id,address,zipcode,phonenumber):
     c, conn = connection()
     c.execute("set names utf8")  # 배송 정보 한글 저장.
-    c.execute("INSERT INTO user_location (email, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", [thwart(email), thwart(address), thwart(zipcode), thwart(phonenumber)])
+    c.execute("INSERT INTO user_location (user_id, address, zipcode, phonenumber) VALUES (%s, %s, %s, %s)", [thwart(user_id), thwart(address), thwart(zipcode), thwart(phonenumber)])
     conn.commit()
     c.close()
     conn.close()
 
 
-def insert_data4(username,time):
+def insert_data4(user_id,time):
     c, conn = connection()
     c.execute("set names utf8")  # 배송 정보 한글 저장.
-    c.execute("INSERT INTO user_order (username, time) VALUES (%s, %s)", [thwart(username), thwart(time)])
+    c.execute("INSERT INTO user_order (user_id, time) VALUES (%s, %s)", [thwart(user_id), thwart(time)])
     conn.commit()
     c.close()
     conn.close()
@@ -190,13 +192,22 @@ def delete_data(table_name, column_name, column_value):
     c.close()
     conn.close()
 
-def update_location(address,zipcode,phonenumber,email):
+def update_location(address,zipcode,phonenumber,user_id):
     c, conn = connection()
     c.execute("set names utf8")  # 배송 정보 한글 저장.
-    c.execute("UPDATE user_location SET address=(%s), zipcode=(%s), phonenumber=(%s)  WHERE email=(%s)", [thwart(address), thwart(zipcode), thwart(phonenumber), thwart(email)])
+    c.execute("UPDATE user_location SET address=(%s), zipcode=(%s), phonenumber=(%s)  WHERE user_id=(%s)", [thwart(address), thwart(zipcode), thwart(phonenumber), thwart(user_id)])
     conn.commit()
     c.close()
     conn.close()
+
+def update_board(board_n,title,content):
+    c, conn = connection()
+    c.execute("set names utf8")  # 배송 정보 한글 저장.
+    c.execute("UPDATE board SET title=(%s), content=(%s)  WHERE board_n=(%s)", [thwart(title), thwart(content), thwart(board_n)])
+    conn.commit()
+    c.close()
+    conn.close()
+
 
 def update_product(product_name,produc_intro,filename,username):
     c, conn = connection()
@@ -218,11 +229,10 @@ def update_info(tablename, product_name,product_intro,filename, product_n):
     conn.close()
 
 
-def update_info1(tablename, email, likes, points):
+def update_info1(tablename, email, points):
     c, conn = connection()
-    data = db_input(tablename, email, likes, points)
     c.execute("set names utf8") 
-    c.execute("UPDATE "+data[0]+" SET likes=(%s),points=(%s) WHERE email=(%s)", [thwart(data[2]), thwart(data[3]), thwart(data[1])])
+    c.execute("UPDATE "+tablename+" SET points=(%s) WHERE email=(%s)", [thwart(points), thwart(email)])
     conn.commit()
     c.close()
     conn.close()
