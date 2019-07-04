@@ -9,6 +9,16 @@ import urllib.request
 from functools import wraps
 import threading
 
+def manage_memory():
+    a= os.popen('df -h' ).read()
+    b = a.split('\n')
+    c = b[1]
+    c = c.split(' ')
+    data = []
+    for i in range(len(c)):
+        if c[i] != '':
+            data.append(c[i])
+    return data[2], data[3]
 
 def users_list():
     """
@@ -59,6 +69,8 @@ def Get_ip_loca():
         data = soup[9:-1]  # 딕셔너리로 변경하기 위해 불필요한 데이터 제거
         data = data.replace('null','None')
         data_dic = eval(data) # 딕셔너리로 변경
+        if data_dic['country_name'] == "Not found":
+            data_dic['country_name']= "Local"
         return data_dic['country_name'], data_dic['state'], ip
 
 

@@ -7,8 +7,8 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website import mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_fuctions import order_info, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, check_product, update_data, update_location, delete_data, update_info1
-from shopping_website.main.main_fuctions import send_reset_email, Get_ip_loca, Get_product_location, users_list
+from shopping_website.db.db_functions import order_info, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, check_product, update_data, update_location, delete_data, update_info1, likes_info, get_userid
+from shopping_website.main.main_functions import send_reset_email, Get_ip_loca, Get_product_location, users_list
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -23,6 +23,7 @@ import re
 from functools import wraps
 
 main = Blueprint('main', __name__)
+
 
 @main.route('/uploads/<path:filename>')
 def download_file(filename):
@@ -62,21 +63,26 @@ def language(language):
 
 @main.context_processor
 def context_processor():
-    product_list, likes_count_all = check_product("product_info")
+    product_list = check_product("product_info")
+    x = likes_info()
+    likes_count = []
+    for i in range(len(product_list)):
+        z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
+        likes_count.append(z)
     n = len(product_list)
     categories_ko = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     categories_en = ['0', 'Female', 'Male', 'Beauty', 'Food', 'Kichen', 'Home Tools' ,'Home Design', 'Device', 'Car', 'Hobby', 'Stationary', 'Book']
     try:
         if session['language'] == 'ko':
-            return dict(categories=categories_ko, p_list=product_list, n=n, likes_count_all=likes_count_all)
+            return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n)
         elif session['language'] == 'en':
-            return dict(categories=categories_en, p_list=product_list, n=n, likes_count_all=likes_count_all)
+            return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n)
     except:
         a,b,c = Get_ip_loca()
         if a == "South Korea" or "Seoul":
-            return dict(categories=categories_ko, p_list=product_list, n=n, likes_count_all=likes_count_all)
+            return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n)
         else:
-            return dict(categories=categories_en, p_list=product_list, n=n, likes_count_all=likes_count_all)
+            return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n)
 
 @main.route("/")
 @main.route("/home", methods=["GET", "POST"])
@@ -84,7 +90,6 @@ def home():
     """
     Post = rank( '1' = 판매자)  - update_data - rank 값 0 or None -> '1'
     """
-    print(users_list())
     try:
         form = Submit_Form(request.form)
         email = session['email']
@@ -103,10 +108,6 @@ def home():
     except:
         country, state, ip = Get_ip_loca()
         rank = 0
-        #if country == "South korea":
-        #    session['language'] = 'ko'
-        #else:
-        #    session['language'] = 'en' 
         return render_template ('home.html', rank=rank, country=country, ip=ip)
 
 """
@@ -324,21 +325,29 @@ def wish_list():
     """
     form = Submit_Form(request.form)
     email = session['email']
-    likes_list = check_info2("likes", "user_list", "email", email)
-    product_numbers = likes_list[0][0]
-    if product_numbers == None or product_numbers == "":
-        product_list, likes_count_all = check_product("product_info")
+    x=likes_info()                               # ((uid, product_number), ~ )
+    y = get_userid(email)
+    z = [list[1] for list in x if list[0] == y ] # uid = y 의 상품번호 리스트]
+    #likes_list = check_info2("likes", "user_list", "email", email)
+    #product_numbers = likes_list[0][0]
+    #if product_numbers == None or product_numbers == "":
+    if z == []:
+        product_list = check_product("product_info")
         n = len(product_list)
         flash( gettext('등록된 상품이 없습니다.'))
         return redirect(url_for('main.home'))
-    likes_product_number = product_numbers.split(',')
-    n = len(likes_product_number)
+    #likes_product_number = product_numbers.split(',')
+    #n = len(likes_product_number)
     wish_list_products = []
+    #print(likes_product_number)
+    n = len(z)
     for i in range(n):
-        if likes_product_number[i] == "":
-            pass
-        else:
-            wish_list_products.append(check_info("product_info", "product_n", likes_product_number[i]))  # 테이블 이름, 컬럼 이름, 상품 번호
+        wish_list_products.append(check_info("product_info", "product_n", str(z[i])))
+    #for i in range(n):
+    #    if likes_product_number[i] == "":
+    #        pass
+    #    else:
+    #        wish_list_products.append(check_info("product_info", "product_n", likes_product_number[i]))  # 테이블 이름, 컬럼 이름, 상품 번호
     if request.method =="POST":
         flash( gettext('구매 진행'))
         points = check_info2("points", "user_list", "email", email)

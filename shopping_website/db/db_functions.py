@@ -21,6 +21,17 @@ def db_input(*args):
         list.append(i)
     return list
 
+def check_cart(tablename, colname1, colname2, value1, value2):
+    c, conn = connection()
+    data = c.execute("SELECT * FROM "+tablename+" WHERE "+colname1+" = (%s) AND "+colname2+" = (%s)", [thwart(value1), thwart(value2)])
+    list = c.fetchall()
+    conn.commit()
+    c.close()
+    conn.close()
+    print(list)
+    return list
+
+
 def order_info(email):
     c, conn = connection()
     c.execute("set names utf8")  # db 한글 있을 시 필요
@@ -31,6 +42,19 @@ def order_info(email):
     conn.close()
     return order_list
 
+def get_userid(email):
+    """
+    input: Email
+    output:  uid
+    """
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT * FROM user_list WHERE email= (%s)", [thwart(email)])
+    info_list = c.fetchall()
+    conn.commit()
+    c.close()
+    conn.close()
+    return info_list[0][0]
 
 def check_info(table_name, column, value):
     data = db_input(table_name, column, value)
@@ -71,7 +95,8 @@ def check_product(table_name):
     c.execute("set names utf8")  # db 한글 있을 시 필요
     table_name = table_name
     data = c.execute("SELECT * FROM "+table_name)
-    product_list = c.fetchall()
+    product_info = c.fetchall()
+    """
     n = len(product_list)
     likes_count_all = []
     try:
@@ -85,6 +110,8 @@ def check_product(table_name):
         return product_list, likes_count_all
     except:
         return product_list
+    """
+    return product_info
 
 def insert_data(table_name, value1, value2, value3):
     c, conn = connection()
@@ -138,6 +165,13 @@ def insert_data5(order_id,number):
     c.close()
     conn.close()
 
+def insert_data6(tablename, col1, col2):
+    c, conn = connection()
+    data = db_input(tablename, col1, col2)
+    c.execute("INSERT INTO "+data[0]+" VALUES (%s, %s)", [thwart(col1), thwart(col2)])
+    conn.commit()
+    c.close()
+    conn.close()
 
 def update_data(table_name, column_name, column_value, row_name, row_value):
     c, conn = connection()
@@ -194,4 +228,15 @@ def update_info1(tablename, email, likes, points):
     conn.close()
 
 
+def likes_info():
+    c, conn = connection()
+    data = c.execute("select * from user_cart")
+    likes_list = c.fetchall()
+    conn.commit()
+    c.close()
+    conn.close()
+    if data != 0:
+        return likes_list
+    else:
+        return None
 

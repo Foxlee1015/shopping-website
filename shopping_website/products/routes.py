@@ -3,7 +3,7 @@ from flask_babel import gettext
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website.forms import ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_fuctions import update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data
+from shopping_website.db.db_functions import get_userid, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data, insert_data6, likes_info, check_cart
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -15,8 +15,9 @@ product = Blueprint('product', __name__)
 
 @product.context_processor
 def context_processor():
-    product_list, likes_count_all = check_product("product_info")
+    product_list = check_product("product_info")
     n = len(product_list)
+    likes_count_all = [ 0 for i in range(100) ]
     categories = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     return dict(categories=categories, p_list=product_list, n=n, likes_count_all=likes_count_all)
 
@@ -64,29 +65,44 @@ def register_product():
 def product_details(product_n):
     form =Submit_Form(request.form)
     email = session['email']
-    product_list, likes_count_all = check_product("product_info")
-    n= len(product_list)
+    user_id = get_userid(email)
+    get_likes = likes_info()
+    u_idforproduct = [list[0] for list in get_likes if list[1] == product_n ]
+    count_likes = len(u_idforproduct) # 해당 상품의 좋아요 수
+    # 상품 번호로 상품 정보 가져오기 
+
+    product_list = check_info("product_info", "product_n", str(product_n))
     info_list = check_info("user_list", "email", email)
     username_email = info_list[0][1]
-    product_n = str(product_n)
-    product_info = check_info("product_info", "product_n", product_n)
-    username_product = product_info[0][5]
-    if username_email == username_product:
+    username_product = product_list[0][5]
+
+    if username_email == username_product: # 자신이  판매자
         datamatch = True
-    if username_email != username_product:
+    if username_email != username_product: 
         datamatch = False
+
     if request.method == "POST":
         info_list =check_info("user_list", "email", email)
         uid = str(info_list[0][0])
         product_n = str(product_n)
+        p = check_cart("user_cart", "user_id", "product_id", str(user_id) ,str(product_n) )
+        if p: 
+            flash( gettext('already in a cart'))
+            return redirect(url_for('main.home')) 
+
+        else:
+            insert_data6("user_cart", str(user_id), str(product_n))
+            flash( gettext('added') )
+            return  redirect(url_for('main.home'))
+        """
         product_likes_list = check_info2("likes", "product_info", "product_n", product_n)
         product_uid_list = product_likes_list[0][0]
-        if 1: 
-            if product_uid_list == None:                                                       
+        if 1:
+            if product_uid_list == None:
                 update_data("product_info", "likes", uid, "product_n", product_n)
-                product_list, likes_count_all = check_product("product_info")                 
+                product_list = check_product("product_info")
                 n = len(product_list)
-            elif uid in str(product_uid_list):                                                       
+            elif uid in str(product_uid_list): 
                 pass
             else:                                                                             # 기존 데이터에 추가하기
                 new_product_likes = str(product_uid_list) + "," + uid
@@ -97,7 +113,7 @@ def product_details(product_n):
         # likes_list[0][0] = 기존에 장바구니에 저장된 상품 번호
         if likes_list[0][0] == None or  likes_list[0][0] == "":                      # 아예 db에 likes 가 없는 경우or 주문해서 삭제된 경우 "" 로 
             update_data("user_list", "likes", product_n, "email", email)
-            product_list, likes_count_all = check_product("product_info")                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
+            product_list = check_product("product_info")                                     # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
             flash( gettext('added') )
             return  redirect(url_for('main.home')) #render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
@@ -107,17 +123,20 @@ def product_details(product_n):
         else:
             new_list = likes_list[0][0] + "," + product_n
             update_data("user_list", "likes", new_list, "email", email)
-            product_list, likes_count_all = check_product("product_info")                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
+            product_list = check_product("product_info")                               # 추가 되는 경우 update 한 후에 check_product 함수 실행
             n = len(product_list)
             flash( gettext('added'))
             return redirect(url_for('main.home')) #render_template('home.html', n=n, p_list=product_list, likes_count_all=likes_count_all)
+        """
+
     else: #GET
-        product_list, likes_count_all = check_product("product_info")
+        product_list = check_info("product_info", "product_n", str(product_n))
+        print(product_list)
         n = len(product_list)
         for i in range(n):                                        # 해당 상품의 정보 가져오고(DB)
             if str(product_n) == str(product_list[i][0]):         # 해당 상품의 정보(DB)와 자세히 버튼을 누른 상품의 번호와 일치하면
                 product_detail = product_list[i]
-        return render_template('product_list.html', product_detail=product_detail, title="product_datails", datamatch=datamatch)
+        return render_template('product_list.html', product_detail=product_list[0], title="product_datails", datamatch=datamatch)
 
 @product.route("/tag/<int:tag_num>", methods=["GET", "POST"])
 def product_tag(tag_num):
