@@ -51,9 +51,6 @@ def order_admin():
     conn.close()
     return info
 
-
-
-
 def get_userinfo(tablename,column, user_id):
     """
     input : user_list,user_id  // product_info, product_n

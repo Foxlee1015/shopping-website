@@ -43,9 +43,3 @@ def admin_category(category):
         top3_products.append(product_list[likes_count[k][0]])
 
     return render_template('admin.html', m=m, ip_list=ip_list, y=y, p=top3_products, l=likes_count, product_count=product_count, user_count=user_count, category=category, title=category, orders_list=orders_list, n=orders_count, used_data=used_data, avail_data=avail_data)
-
-
-@admin.route('/admin/page/<string:jsdata>')
-def get_js_data(jsdata):
-    print(json.loads(jsdata)[0])
-    return redirect(url_for('admin.admin_category', category='page'))

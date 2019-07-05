@@ -1,6 +1,6 @@
 {% extends "layout_2.html" %}
 {% block content %}
-<form action="/board_update/{{ board_list[i][0] }}" method="POST">
+<form action="/board_update/{{ board_list[0] }}" method="POST">
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">{{ username }} </legend>
             <div class="form-group">
@@ -13,7 +13,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ update_form.title(class="form-control", placeholder=board_list[i][1] ) }}
+                    {{ update_form.title(class="form-control", placeholder=board_list[1] ) }}
                 {% endif %}
             </div>
 
@@ -27,7 +27,7 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    {{ update_form.content(class="textarea form-control", cols="5", rows="5", placeholder=board_list[i][2] ) }}
+                    {{ update_form.content(class="textarea form-control", cols="5", rows="5", placeholder=board_list[2] ) }}
                 {% endif %}
             </div>
 
@@ -63,7 +63,7 @@
         </div>
         <p></p>
     </form>
-            <form action='/board_update/{{ board_list[i][0] }}' method='POST'>
+            <form action='/board_update/{{ board_list[0] }}' method='POST'>
             {{ del_form.accept(class="btn btn-sm btn-outline-secondary") }}
             {{ del_form.submit1(class="btn btn-sm btn-outline-secondary", type="submit", value="Delete") }}
             </form>
