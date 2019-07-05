@@ -310,7 +310,7 @@ def order_list():
     user_id = get_userid(email)
     list = order_info(str(user_id))
     if request.method == "POST":
-        track = Get_product_location("6099732777648")
+        track = Get_product_location("6063453062801")
         return render_template('order_list.html', n=len(list), list=list, title="order_list", track=track, m=len(track), form=form)
     else:
         return render_template('order_list.html', title="order_list", list=list, n=len(list), form=form)
@@ -378,7 +378,7 @@ def location_track():
     for i in range(n):
         list.append(check_info("product_info", "product_n", likes_product_number[i]))
     if request.method == "POST":
-        track = Get_product_location("6099732777648")
+        track = Get_product_location("6063453062801") #("6099732777648")
         return render_template('location_track.html', n=n, wish_list_products=list, title="location_track", track=track, m=len(track))
     else:
         return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
