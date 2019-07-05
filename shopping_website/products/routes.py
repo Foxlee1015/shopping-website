@@ -47,14 +47,11 @@ def register_product():
         else:
             filename = secure_filename(file.filename)
             filename =  random_hex + filename
-            #사이즈 조절
-            #output_size = (200,250)
-            #file = Image.open(file)
-            #file.thumbnail(output_size)
             info_list =check_info("user_list", "email", email)
             username = info_list[0][1]
             from run import app
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.close()
             insert_data1("product_info", product_name, product_intro, filename, str(user_id), product_tag, price)
             flash(gettext('success'))
             return redirect(url_for('main.home'))

@@ -41,6 +41,18 @@ def order_info(user_id):
     conn.close()
     return order_list
 
+def order_admin():
+    c, conn = connection()
+    c.execute("set names utf8")  # db 한글 있을 시 필요
+    data = c.execute("SELECT u.uid, u.email, o.order_id, o.time FROM user_list AS u LEFT JOIN user_order AS o ON u.uid = o.user_id")
+    info = c.fetchall()
+    conn.commit()
+    c.close()
+    conn.close()
+    return info
+
+
+
 
 def get_userinfo(tablename,column, user_id):
     """

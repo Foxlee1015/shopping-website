@@ -179,13 +179,12 @@
             <p class="card-text mb-auto">{{ _('intro') }}: {{ p_list[i][2][:10] }}...</p>
             <p></p>
             <p>{{ _('price') }} : {{ p_list[i][7] }} </p>
-            <div class="mb-1 text-muted"> {{ _('likes') }} : {{ count[i] }}</div>
+            <div class="mb-1 text-muted"> {{ _('likes') }} : {{ count[i] }}</div>  
             <a class="btn btn-sm btn-outline-secondary" href="/product_details/{{ p_list[i][0]}}">{{ _('quick look') }}</a>
           </div>  
         </div>
-        <div class="col-auto d-none d-lg-block">
-          <!--<image width="max-width: 100%" height="max-height:100%" src="/uploads/{{ p_list[i][3] }}"></image>-->
-          <image width="200" height="250" src="/uploads/{{ p_list[i][3] }}"></image>
+        <div class="col-auto d-none d-lg-block">  
+          <image width="200" height="250" src="../static/images/{{ p_list[i][3] }}"></image>
         </div>
       </div>
     </div> <!--상품 포스트 1 끝-->
