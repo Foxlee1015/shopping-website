@@ -30,12 +30,11 @@ def download_file(filename):
     from run import app
     return send_from_directory(app.config['UPLOAD_FOLDER_usb'],filename, as_attachment=True)
 
-#app.config['JSON_AS_ASCII'] = False
 
 @babel.localeselector
 def get_locale():
     """
-    1. 세션에 저장되어 있는 언어 2.Ip 주소로 한국이면 한국어 그외 영어로 설정 
+    1. 세션에 저장되어 있는 언어 2.Ip 주소로 한국이면 한국어 그외 영어로 설정
     """
     try:
         language = session['language']
@@ -45,11 +44,13 @@ def get_locale():
         if a == "South Korea":
             session['language'] = 'ko'
             return 'ko'
-        else: 
+        else:
             session['language'] = 'en'
             return 'en'
         #return app.config['BABEL_DEFAULT_LOCALE']
         #return request.accept_languages.best(['en', 'ko'])  # 사용자의 위치에 따라 언어 바뀜(best, 가능한 옵션중(나의 경우. 영어, 한국어)
+
+
 
 @main.route("/language/<language>")
 def language(language):
@@ -61,24 +62,32 @@ def language(language):
 
 @main.context_processor
 def context_processor():
+
+    # Total product information and likes info
     product_list = check_product("product_info")
+    n = len(product_list)
     x = likes_info()
     likes_count = []
     seller_list = []
-    for i in range(len(product_list)):
+    for i in range(n):
         z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
         likes_count.append(z)
         seller = get_userinfo("user_list","uid", str(product_list[i][5]))
         seller_list.append(seller[0][1])
-    n = len(product_list)
+
+    #Product category
     categories_ko = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     categories_en = ['0', 'Female', 'Male', 'Beauty', 'Food', 'Kichen', 'Home Tools' ,'Home Design', 'Device', 'Car', 'Hobby', 'Stationary', 'Book']
     try:
+
+        # session is established
         if session['language'] == 'ko':
             return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n, seller=seller_list)
         elif session['language'] == 'en':
             return dict(categories=categories_en, p_list=product_list, count = likes_count, n=n, seller=seller_list)
     except:
+
+        # session is expired or no session 
         a,b,c = Get_ip_loca()
         if a == "South Korea" or "Seoul":
             return dict(categories=categories_ko, p_list=product_list, count = likes_count, n=n, seller=seller_list)
@@ -88,42 +97,29 @@ def context_processor():
 @main.route("/")
 @main.route("/home", methods=["GET", "POST"])
 def home():
-    """
-    Post = rank( '1' = 판매자)  - update_data - rank 값 0 or None -> '1'
-    """
+
+    # A user is logged in
     try:
         form = Submit_Form(request.form)
         email = session['email']
+        points = check_info2("points", "user_list", "email", email)
         if request.method == "POST" and form.validate():
+
+            # Register as a seller ( rank = 1 )
             rank = '1'
             update_data("user_list", "rank", rank, "email", email)
             flash( gettext('판매자로 등록되셨습니다.'))
-            rank = check_info2("rank", "user_list", "email", email)
-            points = check_info2("points", "user_list", "email", email)
             return render_template('home.html', rank=rank, points=points)
         else:
             email = session['email']
             rank = check_info2("rank", "user_list", "email", email)
-            points = check_info2("points", "user_list", "email", email)
             return render_template('home.html', rank=rank, points=points)
+
+    # A user is not logged in
     except:
         country, state, ip = Get_ip_loca()
         rank = 0
         return render_template ('home.html', rank=rank, country=country, ip=ip)
-
-"""
-# loginmanager 사용
-class User:
-    def __init__(self, email, username):
-        self.email = email
-        self.user_id = username
-
-    def is_active(self):
-        return True
-
-    def get_id(self):
-        return self.user_id
-"""
 
 @main.route('/login/', methods=["GET", "POST"])
 def login():
@@ -139,27 +135,34 @@ def login():
         if session['logged_in'] == True:
             return redirect(url_for('main.home'))
     except:
-            form = LoginForm(request.form)
-            if request.method == "POST" and form.validate():
-                email, pass_data = form.email.data, form.password.data
-                if check_info("user_list", "email", email) == None:
-                    flash('This email doesnt exist')
-                    return render_template("login.html", form=form)
+        form = LoginForm(request.form)
+        if request.method == "POST" and form.validate():
+            email, pass_data = form.email.data, form.password.data
+
+            # Check if the email exists
+            if check_info("user_list", "email", email) == None:
+                flash('This email doesnt exist')
+                return render_template("login.html", form=form)
+
+            else:
+                # Check password
+                info_list = check_info("user_list", "email", email)
+                username, password_db = info_list[0][1], info_list[0][2]
+                password_input = hashlib.sha256(pass_data.encode()).hexdigest()
+
+                # A uers is logged in
+                if password_db == password_input:
+                    session['logged_in'] = True
+                    session['email'] = request.form['email']
+                    flash(username + gettext('engjoy shopping'))
+                    rank = check_info2("rank", "user_list", "email", email)
+                    return render_template("home.html", username=username, rank=rank)
+
+                # failed to log in
                 else:
-                    info_list = check_info("user_list", "email", email)
-                    username, password_db = info_list[0][1], info_list[0][2]
-                    password_input = hashlib.sha256(pass_data.encode()).hexdigest()
-                    if password_db == password_input:
-                        #login_user(email)
-                        session['logged_in'] = True
-                        session['email'] = request.form['email']
-                        flash(username + gettext('engjoy shopping'))
-                        rank = check_info2("rank", "user_list", "email", email)
-                        return render_template("home.html", username=username, rank=rank)
-                    else:
-                        flash( gettext('Wrong password'))
-                        return render_template("login.html", form=form)
-            gc.collect()
+                    flash( gettext('Wrong password'))
+                    return render_template("login.html", form=form)
+        else:
             return render_template("login.html", form=form)
 
 
@@ -169,20 +172,30 @@ def register_page():
     chekc_info = email, username 중복 확인
     session['email'] = form.email.data  = form 의 이메일정보로 세션 저장
     """
+
+
+    #Go back to main page if user is logged in
     try:
         if session['logged_in'] == True:
             return redirect(url_for('main.home'))
+
     except:
         form = RegistrationForm(request.form)
         if request.method == "POST" and form.validate():
             username, email, pass_data = form.username.data, form.email.data, form.password.data
             password = hashlib.sha256(pass_data.encode()).hexdigest()
+
+            # Failed - email exists
             if check_info("user_list", "email", email) != None:
                 flash( gettext('That email is already taken, please choose another') )
                 return render_template('register.html', form=form)
+
+            # Failed - username exists
             if check_info("user_list", "username", username) != None:
                 flash( gettext('That username is already taken, please choose another') )
                 return render_template('register.html', form=form)
+
+            # Save a new user information, the user is logged in
             else:
                 insert_data("user_list",username, password, email)
                 gc.collect()
@@ -200,16 +213,23 @@ def reset():
     check_info = email 존재 확인
     send_reset_email = 암호리셋 링크 전송
     """
+
+    # Redirect to homepage when an user is logged_in
     try:
         if session['logged_in'] == True:
             return redirect(url_for('main.home'))
+
     except:
         form = RequestResetForm(request.form)
         if request.method == "POST":
             email = form.email.data
+
+            # Check if the email exists
             if check_info("user_list", "email", email) == None:
                 flash( gettext('This email doesnt exist') )
                 return render_template("reset.html", form=form)
+
+            # Send an email to the email
             else:
                 send_reset_email(email)
                 flash( gettext('Please check your email') )
@@ -224,18 +244,26 @@ def reset_pass():
     update-_data - 비밀번호 수정
     """
     try:
-        if session['logged_in'] == True:      
+        if session['logged_in'] == True:
             return redirect(url_for('main.home'))
     except:
         form = ResetPasswordForm(request.form)
         if request.method == "POST":
+
+            # Check the information
             email, password, confirm = form.email.data, form.password.data, form.confirm.data
+
+            # password and confirm are not same
             if password != confirm:
                 flash( gettext('Check your password'))
                 return render_template("reset_pass.html", form=form)
+
+            # Check if the email exists
             if check_info("user_list", "email", email) == None:
                 flash( gettext('This email doesnt exist'))
                 return render_template("reset_pass.html", form=form)
+
+            # Save a new password
             else:
                 password = hashlib.sha256(password.encode()).hexdigest()
                 update_data("user_list", "password", password, "email", email)
@@ -262,15 +290,10 @@ def logout():
             lan = session['language']
         session.clear()
         session['language'] = lan
-    #logout_user()
-    #session['logged_in'] = Fasle #.clear()  # 언어세션  설정도 clear 
     except:
         session.clear()
-    #if lan:
-        #session['language'] = lan
     flash( gettext('You have been logged out!'))
     gc.collect()
-    #return render_template('login.html')
     return redirect(url_for('main.home'))
 
 @main.route('/mypage', methods=["GET", "POST"])
@@ -284,23 +307,33 @@ def my_page():
     user_id = str(get_userid(email))
     rank = check_info2("rank", "user_list", "email", email)
     location_data = check_info("user_location", "user_id", user_id)
+
     if request.method == "POST" and form.validate():
         address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
+
+        # Update an address
         if location_data != None:
             update_location(address, zipcode, phonenumber, user_id)
             flash( gettext('배송지 업데이트에 성공했습니다.'))
             return render_template("home.html", form=form, rank=rank)
+
+        # A new address
         else:
             insert_data3(user_id, address, zipcode, phonenumber)
-            flash( gexttext(' 첫 배송지 등록 되었습니다.'))
+            flash( gettext(' 첫 배송지 등록 되었습니다.'))
             return render_template("home.html", form=form, rank=rank)
+
     else:
+        # Return my_page with an old address
         if location_data != None:
             location_data_all = check_info("user_location", "user_id", user_id)
             return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
+
+        # Return empty my_page
         else:
             location_data_all = ((""),(""),(""),(""),)
             return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
+
 
 @main.route("/order_list",  methods=["GET", "POST"])
 @login_required
@@ -315,6 +348,7 @@ def order_list():
     else:
         return render_template('order_list.html', title="order_list", list=list, n=len(list), form=form)
 
+
 @main.route("/wish_list",  methods=["GET", "POST"] )
 @login_required
 def wish_list():
@@ -324,10 +358,12 @@ def wish_list():
     """
     form = Submit_Form(request.form)
     email = session['email']
-    x = likes_info()                               # ((uid, product_number), ~ )
+    x = likes_info()
     y = get_userid(email)
     user_id = str(y)
-    z = [list[1] for list in x if list[0] == y ] # uid = y 의 상품번호 리스트]
+
+    # products likes when user_id is y
+    z = [list[1] for list in x if list[0] == y ]
     if z == []:
         flash( gettext('등록된 상품이 없습니다.'))
         return redirect(url_for('main.home'))
@@ -337,22 +373,24 @@ def wish_list():
         wish_list.append(check_info("product_info", "product_n", str(z[i])))
 
     if request.method =="POST":
-        # 상품 번호 목록 -> 가격 -> 지우기 -> 포인트 업데이트 -> 주문 생성 
+
+        # Check the price
         flash( gettext('구매 진행'))
         user_info = get_userinfo("user_list","uid",user_id)
-        points = user_info[0][6]            # 유저의 포인트
+        points = user_info[0][6]
         for i in range(n):
             product_info = get_userinfo("product_info", "product_n", str(z[i]))
             price = product_info[0][7]
-            points -= price                 # 상품 가격 차감
+            points -= price
 
+        # Update a point
         points = str(points)
         update_info1("user_list", email, points) # 포인트 업데이트
 
-        # 장바구니 비우기
+        # Empty a cart
         delete_data("user_cart", "user_id", user_id)
 
-        # 주문 생성
+        # Create an order
         fmt = "%Y-%m-%d %H:%M:%S"
         KST = datetime.now(timezone('Asia/Seoul'))
         x = KST.strftime(fmt)  #x = '%s-%s-%s'%(now.year, now.month, now.day)
@@ -364,23 +402,4 @@ def wish_list():
         return redirect(url_for('main.order_list'))
     else:
         return render_template('wishlist.html', n=n, wish_list_products=wish_list, title="wish_list")
-
-
-@main.route("/location_track",  methods=["GET", "POST"] )
-def location_track():
-    form = Submit_Form(request.form)  # Location_track_Form
-    email = session['email']             # 구매 상품으로 가져오기 해야함
-    likes_list = check_info2("likes", "user_list", "email", email)  # 이메일에 저장된 likes 상품 번호$
-    product_numbers = likes_list[0][0]  # 2,7  (상품번호, 상품번호) 형식에서
-    likes_product_number = product_numbers.split(',')
-    n = len(likes_product_number)
-    list = []
-    for i in range(n):
-        list.append(check_info("product_info", "product_n", likes_product_number[i]))
-    if request.method == "POST":
-        track = Get_product_location("6063453062801") #("6099732777648")
-        return render_template('location_track.html', n=n, wish_list_products=list, title="location_track", track=track, m=len(track))
-    else:
-        return render_template('location_track.html', n=n, wish_list_products=list, title="배송정보")
-
 
