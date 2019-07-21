@@ -7,7 +7,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website import mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_functions import order_info, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, check_product, update_data, update_location, delete_data, update_info1, likes_info, get_userid, get_userinfo
+from shopping_website.db.db_functions import select_data, order_info, update_info, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, update_data, update_location, delete_data, update_info1
 from shopping_website.main.main_functions import send_reset_email, Get_ip_loca, Get_product_location, users_list
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
@@ -64,17 +64,19 @@ def language(language):
 def context_processor():
 
     # Total product information and likes info
-    product_list = check_product("product_info")
+    product_list = select_data(table_name="product_info")
     n = len(product_list)
-    x = likes_info()
+    x = select_data(table_name="user_cart")
     likes_count = []
     seller_list = []
-    for i in range(n):
-        z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
-        likes_count.append(z)
-        seller = get_userinfo("user_list","uid", str(product_list[i][5]))
-        seller_list.append(seller[0][1])
-
+    try:
+        for i in range(n):
+            z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
+            likes_count.append(z)
+            seller = select_data(table_name="user_list", column1="uid", row=str(product_list[i][5]))
+            seller_list.append(seller[0][1])
+    except:
+        pass
     #Product category
     categories_ko = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     categories_en = ['0', 'Female', 'Male', 'Beauty', 'Food', 'Kichen', 'Home Tools' ,'Home Design', 'Device', 'Car', 'Hobby', 'Stationary', 'Book']
@@ -102,7 +104,7 @@ def home():
     try:
         form = Submit_Form(request.form)
         email = session['email']
-        points = check_info2("points", "user_list", "email", email)
+        points = select_data(table_name="user_list", select_column="points", column1="email", row=str(email))
         if request.method == "POST" and form.validate():
 
             # Register as a seller ( rank = 1 )
@@ -112,7 +114,7 @@ def home():
             return render_template('home.html', rank=rank, points=points)
         else:
             email = session['email']
-            rank = check_info2("rank", "user_list", "email", email)
+            rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
             return render_template('home.html', rank=rank, points=points)
 
     # A user is not logged in
@@ -125,8 +127,7 @@ def home():
 def login():
     """
     로그인 상태 -> 홈으로 리턴
-    check_info("user_list", "email", email) - 저장된 email 중복 확인
-    info_list = check_info("user_list", "email", email) - 해당 이메일의 username, password 가져옴
+    select_data(table_name="user_list", column1="email", row=str(email)) - 저장된 email 중복 확인 및 데이터 가져옴
     비밀번호 일치 확인 후 로그인
     해당 이메일의 rank 확인
     :return:
@@ -140,13 +141,14 @@ def login():
             email, pass_data = form.email.data, form.password.data
 
             # Check if the email exists
-            if check_info("user_list", "email", email) == None:
+            check_data = select_data(table_name="user_list", column1="email", row=str(email))
+            if check_data == None :
                 flash('This email doesnt exist')
                 return render_template("login.html", form=form)
 
             else:
                 # Check password
-                info_list = check_info("user_list", "email", email)
+                info_list = check_data
                 username, password_db = info_list[0][1], info_list[0][2]
                 password_input = hashlib.sha256(pass_data.encode()).hexdigest()
 
@@ -155,7 +157,7 @@ def login():
                     session['logged_in'] = True
                     session['email'] = request.form['email']
                     flash(username + gettext('engjoy shopping'))
-                    rank = check_info2("rank", "user_list", "email", email)
+                    rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
                     return render_template("home.html", username=username, rank=rank)
 
                 # failed to log in
@@ -186,12 +188,14 @@ def register_page():
             password = hashlib.sha256(pass_data.encode()).hexdigest()
 
             # Failed - email exists
-            if check_info("user_list", "email", email) != None:
+            check_data = select_data(table_name="user_list", column1="email", row=str(email))
+            if check_data != None:
                 flash( gettext('That email is already taken, please choose another') )
                 return render_template('register.html', form=form)
 
             # Failed - username exists
-            if check_info("user_list", "username", username) != None:
+            check_data1 = select_data(table_name="user_list", column1="username", row=str(username))
+            if check_data1 != None:
                 flash( gettext('That username is already taken, please choose another') )
                 return render_template('register.html', form=form)
 
@@ -210,7 +214,7 @@ def register_page():
 @main.route("/reset/", methods=["GET", "POST"])
 def reset():
     """
-    check_info = email 존재 확인
+    check_data = email 존재 확인
     send_reset_email = 암호리셋 링크 전송
     """
 
@@ -225,7 +229,8 @@ def reset():
             email = form.email.data
 
             # Check if the email exists
-            if check_info("user_list", "email", email) == None:
+            check_data = select_data(table_name="user_list", column1="email", row=str(email))
+            if check_data == None:
                 flash( gettext('This email doesnt exist') )
                 return render_template("reset.html", form=form)
 
@@ -240,7 +245,7 @@ def reset():
 @main.route("/reset_pass/", methods=["GET", "POST"])
 def reset_pass():
     """
-    check_info - 이메일 존재 확인
+    check_data - 이메일 존재 확인
     update-_data - 비밀번호 수정
     """
     try:
@@ -259,7 +264,8 @@ def reset_pass():
                 return render_template("reset_pass.html", form=form)
 
             # Check if the email exists
-            if check_info("user_list", "email", email) == None:
+            check_data = select_data(table_name="user_list", column1="email", row=str(email))
+            if check_data == None:
                 flash( gettext('This email doesnt exist'))
                 return render_template("reset_pass.html", form=form)
 
@@ -304,16 +310,16 @@ def my_page():
     """
     form = LocationForm(request.form)
     email = session['email']
-    user_id = str(get_userid(email))
-    rank = check_info2("rank", "user_list", "email", email)
-    location_data = check_info("user_location", "user_id", user_id)
+    user_id = str(select_data(table_name="user_list", column1="email", row=email)[0][0])
+    rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
+    location_data = select_data(table_name="user_location", column1="email", row=email)   # select_data(table_name="user_location", column1="user_id", row=user_id)
 
     if request.method == "POST" and form.validate():
         address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
 
         # Update an address
         if location_data != None:
-            update_location(address, zipcode, phonenumber, user_id)
+            update_location(address, zipcode, phonenumber, email)  # email => id
             flash( gettext('배송지 업데이트에 성공했습니다.'))
             return render_template("home.html", form=form, rank=rank)
 
@@ -326,7 +332,7 @@ def my_page():
     else:
         # Return my_page with an old address
         if location_data != None:
-            location_data_all = check_info("user_location", "user_id", user_id)
+            location_data_all = select_data(table_name="user_location", column1="email", row=email)   # select_data(table_name="user_location", column1="user_id", row=user_id)
             return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
 
         # Return empty my_page
@@ -340,7 +346,7 @@ def my_page():
 def order_list():
     form = Submit_Form(request.form)
     email = session['email']
-    user_id = get_userid(email)
+    user_id = select_data(table_name="user_list", column1="email", row=email)[0][0]
     list = order_info(str(user_id))
     if request.method == "POST":
         track = Get_product_location("6063453062801")
@@ -358,48 +364,50 @@ def wish_list():
     """
     form = Submit_Form(request.form)
     email = session['email']
-    x = likes_info()
-    y = get_userid(email)
+    x = select_data(table_name="user_cart")
+    y = select_data(table_name="user_list", column1="email", row=email)[0][0]
     user_id = str(y)
 
-    # products likes when user_id is y
-    z = [list[1] for list in x if list[0] == y ]
-    if z == []:
+    try:
+        # products likes when user_id is y
+        z = [list[1] for list in x if list[0] == y ]
+        wish_list = []
+        n = len(z)
+        for i in range(n):
+            wish_list.append(select_data(table_name="product_info", column1="product_n", row=str(z[i])))
+        if request.method =="POST":
+
+            # Check the price
+            flash( gettext('구매 진행'))
+            user_info = select_data(table_name="user_list", column1="uid", row=str(user_id))
+            points = user_info[0][6]
+            for i in range(n):
+                product_info = select_data(table_name="product_info", column1="product_n", row=str(z[i]))
+                price = product_info[0][7]
+                points -= price
+
+            # Update a point
+            points = str(points)
+            update_info1("user_list", email, points) # 포인트 업데이트
+
+            # Empty a cart
+            delete_data("user_cart", "user_id", user_id)
+
+            # Create an order
+            fmt = "%Y-%m-%d %H:%M:%S"
+            KST = datetime.now(timezone('Asia/Seoul'))
+            x = KST.strftime(fmt)  #x = '%s-%s-%s'%(now.year, now.month, now.day)
+            insert_data4(user_id,x)
+            y = select_data(table_name="user_order")
+            number = str(y[-1][0])
+            for i in range(len(wish_list)):
+                insert_data5(number, str(wish_list[i][0][0]))
+            return redirect(url_for('main.order_list'))
+        else:
+            return render_template('wishlist.html', n=n, wish_list_products=wish_list, title="wish_list")
+
+    except:
+        #if z == []:
         flash( gettext('등록된 상품이 없습니다.'))
         return redirect(url_for('main.home'))
-    wish_list = []
-    n = len(z)
-    for i in range(n):
-        wish_list.append(check_info("product_info", "product_n", str(z[i])))
-
-    if request.method =="POST":
-
-        # Check the price
-        flash( gettext('구매 진행'))
-        user_info = get_userinfo("user_list","uid",user_id)
-        points = user_info[0][6]
-        for i in range(n):
-            product_info = get_userinfo("product_info", "product_n", str(z[i]))
-            price = product_info[0][7]
-            points -= price
-
-        # Update a point
-        points = str(points)
-        update_info1("user_list", email, points) # 포인트 업데이트
-
-        # Empty a cart
-        delete_data("user_cart", "user_id", user_id)
-
-        # Create an order
-        fmt = "%Y-%m-%d %H:%M:%S"
-        KST = datetime.now(timezone('Asia/Seoul'))
-        x = KST.strftime(fmt)  #x = '%s-%s-%s'%(now.year, now.month, now.day)
-        insert_data4(user_id,x)
-        y = check_product("user_order")
-        number = str(y[-1][0])
-        for i in range(len(wish_list)):
-            insert_data5(number, str(wish_list[i][0][0]))
-        return redirect(url_for('main.order_list'))
-    else:
-        return render_template('wishlist.html', n=n, wish_list_products=wish_list, title="wish_list")
 

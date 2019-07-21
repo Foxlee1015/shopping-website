@@ -3,7 +3,7 @@ from flask_babel import gettext
 from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website.forms import ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_functions import get_userid, update_info, check_info, check_info2, insert_data, insert_data1, insert_data2, insert_data3, check_product, update_data, update_location, delete_data, insert_data6, likes_info, check_cart, get_userinfo
+from shopping_website.db.db_functions import select_data, update_info, insert_data, insert_data1, insert_data2, insert_data3, update_data, update_location, delete_data, insert_data6, check_cart
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
 from MySQLdb import escape_string as thwart
@@ -17,7 +17,7 @@ product = Blueprint('product', __name__)
 def context_processor():
 
     # Total products for Homepage
-    product_list = check_product("product_info")
+    product_list = select_data(table_name="product_info")
     n = len(product_list)
     categories = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     return dict(categories=categories, p_list=product_list, n=n) #, likes_count_all=likes_count_all)
@@ -33,8 +33,8 @@ def register_product():
 
     # Check if a user is a seller ( rank ==1 )
     email = session['email']
-    user_id = get_userid(email)
-    rank = check_info2("rank", "user_list", "email", email)
+    user_id = select_data(table_name="user_list", column1="email", row=str(email))[0][0]
+    rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
     price = "50"
 
 
@@ -74,16 +74,19 @@ def register_product():
 def product_details(product_n):
     form =Submit_Form(request.form)
     email = session['email']
-    user_id = get_userid(email)
+    user_id = select_data(table_name="user_list", column1="email", row=str(email))[0][0]
 
     # Get likes info of a product
-    get_likes = likes_info()
-    u_idforproduct = [list[0] for list in get_likes if list[1] == product_n ]
-    count_likes = len(u_idforproduct)
+    get_likes = select_data(table_name="user_cart")
+    try:
+        u_idforproduct = [list[0] for list in get_likes if list[1] == product_n ]
+        count_likes = len(u_idforproduct)
+    except:
+        count_likes = 0
 
     # Buyer (Logged in) - Seller( Product's writer)
     buyer = user_id
-    product_list = check_info("product_info", "product_n", str(product_n))
+    product_list = select_data(table_name="product_info", column1="product_n", row=str(product_n))
     seller = product_list[0][5]
     if buyer == seller :
         datamatch = True
@@ -105,7 +108,7 @@ def product_details(product_n):
             return  redirect(url_for('main.home'))
     # Return a products detail page
     else:
-        product_list = check_info("product_info", "product_n", str(product_n))
+        product_list = select_data(table_name="product_info", column1="product_n", row=str(product_n))
         n = len(product_list)
         return render_template('product_list.html', product_detail=product_list[0], title="product_datails", datamatch=datamatch)
 
@@ -114,7 +117,7 @@ def product_tag(tag_num):
 
     # Get a product whose tag is tag_num
     tag_num=str(tag_num)
-    tag_product = check_info("product_info", "tag", tag_num)
+    tag_product = select_data(table_name="product_info", column1="tag", row=tag_num)
     # No product whose tag is tag_num
     if tag_product == None:
         return redirect(url_for('main.home')) # 태그에 저장된 것이 없을 경우
@@ -122,7 +125,7 @@ def product_tag(tag_num):
     # Get a list of products
     product_list = tag_product
     n = len(product_list)
-    x = likes_info()
+    x = select_data(table_name="user_cart")
     likes_count = []
     seller_list = []
 
@@ -130,7 +133,7 @@ def product_tag(tag_num):
     for i in range(n):
         z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
         likes_count.append(z)
-        seller = get_userinfo("user_list","uid", str(product_list[i][5]))
+        seller = select_data(table_name="user_list", column1="uid", row=str(product_list[i][5]))
         seller_list.append(seller[0][1])
 
 
@@ -141,10 +144,10 @@ def product_tag(tag_num):
         if request.method == "POST" and form.validate():
             register_seller(email)
             flash(gettext('rg_seller'))
-            rank = check_info2("rank", "user_list", "email", email)
+            rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
             return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count, rank=rank, tag_num=tag_num, seller=seller_list, count=likes_count)
         else:
-            rank = check_info2("rank", "user_list", "email", email)
+            rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
             return render_template('home.html', p_list=product_list, n=n, likes_count_all=likes_count, rank=rank, tag_num=tag_num, seller=seller_list, count=likes_count)
 
     # Not logged in
@@ -159,7 +162,7 @@ def product_update(product_n):
     del_form = Delete_Form(request.form)
     update_form = ProductForm(request.form)
     product_num = str(product_n)
-    product_list = check_info("product_info", "product_n", product_num)
+    product_list = select_data(table_name="product_info", column1="product_n", row=product_num)
     email = session['email']
 
     if request.method == "POST":
