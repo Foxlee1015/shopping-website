@@ -74,18 +74,17 @@ def register_product():
 def product_details(product_n):
     form =Submit_Form(request.form)
     email = session['email']
-    user_id = select_data(table_name="user_list", column1="email", row=str(email))[0][0]
+    seller_id = select_data(table_name="product_info", select_column="user_id", column1="product_n", row=str(product_n)) 
+    seller_info = select_data(table_name="user_list", column1="uid", row=seller_id[0][0])
+    user_id, username = seller_info[0][0], seller_info[0][1]
 
     # Get likes info of a product
-    get_likes = select_data(table_name="user_cart")
-    try:
-        u_idforproduct = [list[0] for list in get_likes if list[1] == product_n ]
-        count_likes = len(u_idforproduct)
-    except:
-        count_likes = 0
+    get_likes = select_data(table_name="user_cart") #likes_info()
+    u_idforproduct = [list[0] for list in get_likes if list[1] == product_n ]
+    count_likes = len(u_idforproduct)
 
     # Buyer (Logged in) - Seller( Product's writer)
-    buyer = user_id
+    buyer = select_data(table_name="user_list",select_column="uid", column1="email", row=email)[0][0]
     product_list = select_data(table_name="product_info", column1="product_n", row=str(product_n))
     seller = product_list[0][5]
     if buyer == seller :
@@ -94,7 +93,7 @@ def product_details(product_n):
         datamatch = False
 
     if request.method == "POST":
-        p = check_cart("user_cart", "user_id", "product_id", str(user_id) ,str(product_n) )
+        p = check_cart("user_cart", "user_id", "product_id", str(buyer) ,str(product_n) )
 
         # A product is already in a cart
         if p:
@@ -103,14 +102,14 @@ def product_details(product_n):
 
         # Add a product in a cart
         else:
-            insert_data6("user_cart", str(user_id), str(product_n))
+            insert_data6("user_cart", str(buyer), str(product_n))
             flash( gettext('added') )
             return  redirect(url_for('main.home'))
     # Return a products detail page
     else:
         product_list = select_data(table_name="product_info", column1="product_n", row=str(product_n))
         n = len(product_list)
-        return render_template('product_list.html', product_detail=product_list[0], title="product_datails", datamatch=datamatch)
+        return render_template('product_list.html', product_detail=product_list[0], title="product_datails", datamatch=datamatch, likes=count_likes, username=username)
 
 @product.route("/tag/<int:tag_num>", methods=["GET", "POST"])
 def product_tag(tag_num):

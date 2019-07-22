@@ -7,7 +7,7 @@ from PIL import Image
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website import mail, babel
 from shopping_website.forms import LoginForm, RegistrationForm, RequestResetForm, ResetPasswordForm, BoardForm, LocationForm, ProductForm, Submit_Form, Delete_Form
-from shopping_website.db.db_functions import select_data, order_info, update_info, insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, update_data, update_location, delete_data, update_info1
+from shopping_website.db.db_functions import select_data, order_info, update_info,  insert_data, insert_data1, insert_data2, insert_data3, insert_data4, insert_data5, update_data, update_location, delete_data, update_info1
 from shopping_website.main.main_functions import send_reset_email, Get_ip_loca, Get_product_location, users_list
 from wtforms import Form, PasswordField, validators, StringField, SubmitField, BooleanField
 from shopping_website.db.dbconnect import connection
@@ -69,14 +69,12 @@ def context_processor():
     x = select_data(table_name="user_cart")
     likes_count = []
     seller_list = []
-    try:
-        for i in range(n):
-            z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
-            likes_count.append(z)
-            seller = select_data(table_name="user_list", column1="uid", row=str(product_list[i][5]))
-            seller_list.append(seller[0][1])
-    except:
-        pass
+    for i in range(n):
+        z = len([ item[0] for item in x if item[1] == product_list[i][0] ])
+        likes_count.append(z)
+        seller = select_data(table_name="user_list", column1="uid", row=str(product_list[i][5])) 
+        seller_list.append(seller[0][1])
+
     #Product category
     categories_ko = ['0', '여성패션', '남성패션', '뷰티', '식품', '주방용품', '생활용품' ,'홈인테리어', '가전디지털', '자동차', '완구취미', '문구', '도서']
     categories_en = ['0', 'Female', 'Male', 'Beauty', 'Food', 'Kichen', 'Home Tools' ,'Home Design', 'Device', 'Car', 'Hobby', 'Stationary', 'Book']
@@ -127,7 +125,6 @@ def home():
 def login():
     """
     로그인 상태 -> 홈으로 리턴
-    select_data(table_name="user_list", column1="email", row=str(email)) - 저장된 email 중복 확인 및 데이터 가져옴
     비밀번호 일치 확인 후 로그인
     해당 이메일의 rank 확인
     :return:
@@ -142,7 +139,7 @@ def login():
 
             # Check if the email exists
             check_data = select_data(table_name="user_list", column1="email", row=str(email))
-            if check_data == None :
+            if len(check_data) == 0 :
                 flash('This email doesnt exist')
                 return render_template("login.html", form=form)
 
@@ -189,13 +186,13 @@ def register_page():
 
             # Failed - email exists
             check_data = select_data(table_name="user_list", column1="email", row=str(email))
-            if check_data != None:
+            if len(check_data) != 0:
                 flash( gettext('That email is already taken, please choose another') )
                 return render_template('register.html', form=form)
 
             # Failed - username exists
             check_data1 = select_data(table_name="user_list", column1="username", row=str(username))
-            if check_data1 != None:
+            if len(check_data) != 0:
                 flash( gettext('That username is already taken, please choose another') )
                 return render_template('register.html', form=form)
 
@@ -312,14 +309,14 @@ def my_page():
     email = session['email']
     user_id = str(select_data(table_name="user_list", column1="email", row=email)[0][0])
     rank = select_data(table_name="user_list", select_column="rank", column1="email", row=str(email))
-    location_data = select_data(table_name="user_location", column1="email", row=email)   # select_data(table_name="user_location", column1="user_id", row=user_id)
+    location_data = select_data(table_name="user_location", column1="user_id", row=user_id)
 
     if request.method == "POST" and form.validate():
         address, zipcode, phonenumber = form.address.data, form.zipcode.data, form.phonenumber.data
 
         # Update an address
-        if location_data != None:
-            update_location(address, zipcode, phonenumber, email)  # email => id
+        if len(location_data) != 0:
+            update_location(address, zipcode, phonenumber, user_id)
             flash( gettext('배송지 업데이트에 성공했습니다.'))
             return render_template("home.html", form=form, rank=rank)
 
@@ -331,8 +328,8 @@ def my_page():
 
     else:
         # Return my_page with an old address
-        if location_data != None:
-            location_data_all = select_data(table_name="user_location", column1="email", row=email)   # select_data(table_name="user_location", column1="user_id", row=user_id)
+        if len(location_data) != 0:
+            location_data_all = select_data(table_name="user_location", column1="user_id", row=user_id)
             return render_template("mypage.html", form=form, location_data_all=location_data_all, title="mypage")
 
         # Return empty my_page
@@ -368,46 +365,44 @@ def wish_list():
     y = select_data(table_name="user_list", column1="email", row=email)[0][0]
     user_id = str(y)
 
-    try:
-        # products likes when user_id is y
-        z = [list[1] for list in x if list[0] == y ]
-        wish_list = []
-        n = len(z)
-        for i in range(n):
-            wish_list.append(select_data(table_name="product_info", column1="product_n", row=str(z[i])))
-        if request.method =="POST":
-
-            # Check the price
-            flash( gettext('구매 진행'))
-            user_info = select_data(table_name="user_list", column1="uid", row=str(user_id))
-            points = user_info[0][6]
-            for i in range(n):
-                product_info = select_data(table_name="product_info", column1="product_n", row=str(z[i]))
-                price = product_info[0][7]
-                points -= price
-
-            # Update a point
-            points = str(points)
-            update_info1("user_list", email, points) # 포인트 업데이트
-
-            # Empty a cart
-            delete_data("user_cart", "user_id", user_id)
-
-            # Create an order
-            fmt = "%Y-%m-%d %H:%M:%S"
-            KST = datetime.now(timezone('Asia/Seoul'))
-            x = KST.strftime(fmt)  #x = '%s-%s-%s'%(now.year, now.month, now.day)
-            insert_data4(user_id,x)
-            y = select_data(table_name="user_order")
-            number = str(y[-1][0])
-            for i in range(len(wish_list)):
-                insert_data5(number, str(wish_list[i][0][0]))
-            return redirect(url_for('main.order_list'))
-        else:
-            return render_template('wishlist.html', n=n, wish_list_products=wish_list, title="wish_list")
-
-    except:
-        #if z == []:
+    # products likes when user_id is y
+    z = [list[1] for list in x if list[0] == y ]
+    if z == []:
         flash( gettext('등록된 상품이 없습니다.'))
         return redirect(url_for('main.home'))
+    wish_list = []
+    n = len(z)
+    for i in range(n):
+        wish_list.append(select_data(table_name="product_info", column1="product_n", row=str(z[i])))
+
+    if request.method =="POST":
+
+        # Check the price
+        flash( gettext('구매 진행'))
+        user_info = select_data(table_name="user_list", column1="uid", row=str(user_id))
+        points = user_info[0][6]
+        for i in range(n):
+            product_info = select_data(table_name="product_info", column1="product_n", row=str(z[i]))
+            price = product_info[0][7]
+            points -= price
+
+        # Update a point
+        points = str(points)
+        update_info1("user_list", email, points) # 포인트 업데이트
+
+        # Empty a cart
+        delete_data("user_cart", "user_id", user_id)
+
+        # Create an order
+        fmt = "%Y-%m-%d %H:%M:%S"
+        KST = datetime.now(timezone('Asia/Seoul'))
+        x = KST.strftime(fmt)  #x = '%s-%s-%s'%(now.year, now.month, now.day)
+        insert_data4(user_id,x)
+        y = select_data(table_name="user_order")
+        number = str(y[-1][0])
+        for i in range(len(wish_list)):
+            insert_data5(number, str(wish_list[i][0][0]))
+        return redirect(url_for('main.order_list'))
+    else:
+        return render_template('wishlist.html', n=n, wish_list_products=wish_list, title="wish_list")
 

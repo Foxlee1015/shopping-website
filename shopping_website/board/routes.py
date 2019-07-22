@@ -29,7 +29,7 @@ def board_page():
         # Check if an user is authorized
         if password_db == password_input:
             # save in DB
-            insert_data2("board", title, content, email)   # insert_data2("board", title, content, user_id)
+            insert_data2("board", title, content, str(user_id))
             flash(user_info[0][1] + gettext('님 빠른 시일 내에 연락드리겠습니다.'))
             return redirect(url_for('board.board_main'))
         else:
@@ -49,11 +49,9 @@ def board_main():
     # Get writer's email address
     email_list = []
     for i in range(n):
-        user_email = board_list[i][3]
-        email_list.append(user_email) # local
-
-        #email = select_data(table_name="user_list", column1="uid", row=str(user_id), select_column="email")
-        #email_list.append(email)
+        user_id = board_list[i][3]
+        email = select_data(table_name="user_list", column1="uid", row=str(user_id), select_column="email")
+        email_list.append(email)
 
     return render_template("board_main.html", board_list=board_list, board_count_n=n, title="board", email=email_list)
 
@@ -71,13 +69,10 @@ def board_update(board_num):
 
     # Get a board_info
     board_list = select_data(table_name="board", column1="board_n", row=str(board_n))
-    print(board_n)
-    print(board_list)
     board_list = board_list[0] 
 
     # No authorization
-    if board_list[3] != email: # local     # board_list[3] != user_id: -> server
-        print(board_list[3], email)
+    if board_list[3] != user_id:
         flash( gettext('권한 없음'))
         return redirect(url_for('board.board_main'))
 

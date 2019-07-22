@@ -4,7 +4,7 @@ from flask_babel import Babel, format_date, gettext
 from flask import Flask, render_template, url_for, flash, request, redirect, session, flash, send_from_directory, Blueprint
 from shopping_website import mail, babel
 from shopping_website.main.main_functions import users_list, manage_memory
-from shopping_website.db.db_functions import update_info, insert_data, insert_data1, insert_data2, insert_data3, update_data, update_location, delete_data, order_admin
+from shopping_website.db.db_functions import select_data, update_info, insert_data, insert_data1, insert_data2, insert_data3, update_data, update_location, delete_data, order_admin
 from shopping_website.db.dbconnect import connection
 
 admin = Blueprint('admin', __name__)
@@ -20,7 +20,7 @@ def admin_category(category):
     orders_count = len(orders_list)
 
     # Product information
-    product_list = select_data(table_name="product_info")
+    product_list =  select_data(table_name="product_info")
     product_count = len(product_list)+1
 
     # User information
