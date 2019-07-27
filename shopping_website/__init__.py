@@ -28,8 +28,8 @@ def create_app():
     app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'dh16931@gmail.com' # os.environ.get('EMAIL_USER')
-    app.config['MAIL_PASSWORD'] = 'rbhs svci fmwm atpv' #os.environ.get('EMAIL_PASS')
+    app.config['MAIL_USERNAME'] = ***
+    app.config['MAIL_PASSWORD'] = ***
     mail.init_app(app)
     app.config['BABEL_DEFAULT_LOCALE'] = 'en'
     babel.init_app(app)
