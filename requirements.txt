@@ -15,7 +15,7 @@ WTFormValidation==1.0.0
 WTForms==2.2.1
 Werkzeug==0.15.2	
 blinker==1.4
-certifi==2019.3.9	
+certifi==2022.12.7	
 chardet==3.0.4
 idna==2.8
 image-resizer==0.1.1	
